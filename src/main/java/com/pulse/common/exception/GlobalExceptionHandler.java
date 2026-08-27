@@ -5,6 +5,8 @@ import com.pulse.incident.exception.InvalidIncidentStatusTransitionException;
 import com.pulse.service.exception.MonitoredServiceNameAlreadyExistsException;
 import com.pulse.service.exception.MonitoredServiceNotFoundException;
 import com.pulse.team.exception.TeamNameAlreadyExistsException;
+import com.pulse.team.exception.TeamNotFoundException;
+import com.pulse.user.exception.UserEmailAlreadyExistsException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -102,6 +104,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TeamNameAlreadyExistsException.class)
     public ProblemDetail handleTeamNameAlreadyExists(
         TeamNameAlreadyExistsException exception
+    ) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(TeamNotFoundException.class)
+    public ProblemDetail handleTeamNotFound(TeamNotFoundException exception) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.NOT_FOUND,
+            exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(UserEmailAlreadyExistsException.class)
+    public ProblemDetail handleUserEmailAlreadyExists(
+        UserEmailAlreadyExistsException exception
     ) {
         return ProblemDetail.forStatusAndDetail(
             HttpStatus.CONFLICT,
