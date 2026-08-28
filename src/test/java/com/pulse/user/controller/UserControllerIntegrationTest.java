@@ -8,6 +8,7 @@ import com.pulse.team.repository.TeamRepository;
 import com.pulse.user.entity.User;
 import com.pulse.user.entity.UserRole;
 import com.pulse.user.repository.UserRepository;
+import com.pulse.task.repository.IncidentTaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ class UserControllerIntegrationTest {
     private AlertRepository alertRepository;
 
     @Autowired
+    private IncidentTaskRepository incidentTaskRepository;
+
+    @Autowired
     private MonitoredServiceRepository monitoredServiceRepository;
 
     @Autowired
@@ -49,6 +53,7 @@ class UserControllerIntegrationTest {
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        incidentTaskRepository.deleteAll();
         alertRepository.deleteAll();
         incidentRepository.deleteAll();
         monitoredServiceRepository.deleteAll();

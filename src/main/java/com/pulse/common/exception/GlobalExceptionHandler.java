@@ -9,6 +9,9 @@ import com.pulse.service.exception.MonitoredServiceNotFoundException;
 import com.pulse.team.exception.TeamNameAlreadyExistsException;
 import com.pulse.team.exception.TeamNotFoundException;
 import com.pulse.user.exception.UserEmailAlreadyExistsException;
+import com.pulse.user.exception.UserNotFoundException;
+import com.pulse.task.exception.IncidentTaskNotFoundException;
+import com.pulse.task.exception.InvalidIncidentTaskStatusTransitionException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -24,6 +27,34 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(IncidentTaskNotFoundException.class)
+    public ProblemDetail handleIncidentTaskNotFound(
+        IncidentTaskNotFoundException exception
+    ) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.NOT_FOUND,
+            exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(InvalidIncidentTaskStatusTransitionException.class)
+    public ProblemDetail handleInvalidIncidentTaskStatusTransition(
+        InvalidIncidentTaskStatusTransitionException exception
+    ) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleUserNotFound(UserNotFoundException exception) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.NOT_FOUND,
+            exception.getMessage()
+        );
+    }
 
     @ExceptionHandler(AlertNotFoundException.class)
     public ProblemDetail handleAlertNotFound(AlertNotFoundException exception) {

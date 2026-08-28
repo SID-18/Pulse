@@ -6,6 +6,7 @@ import com.pulse.alert.repository.AlertRepository;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.entity.IncidentSeverity;
 import com.pulse.incident.repository.IncidentRepository;
+import com.pulse.task.repository.IncidentTaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +36,14 @@ class AlertControllerIntegrationTest {
     private AlertRepository alertRepository;
 
     @Autowired
+    private IncidentTaskRepository incidentTaskRepository;
+
+    @Autowired
     private IncidentRepository incidentRepository;
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        incidentTaskRepository.deleteAll();
         alertRepository.deleteAll();
         incidentRepository.deleteAll();
     }

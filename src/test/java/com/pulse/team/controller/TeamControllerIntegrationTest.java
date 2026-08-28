@@ -4,6 +4,7 @@ import com.pulse.alert.repository.AlertRepository;
 import com.pulse.incident.repository.IncidentRepository;
 import com.pulse.service.repository.MonitoredServiceRepository;
 import com.pulse.team.entity.Team;
+import com.pulse.task.repository.IncidentTaskRepository;
 import com.pulse.team.repository.TeamRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ class TeamControllerIntegrationTest {
     private AlertRepository alertRepository;
 
     @Autowired
+    private IncidentTaskRepository incidentTaskRepository;
+
+    @Autowired
     private MonitoredServiceRepository monitoredServiceRepository;
 
     @Autowired
@@ -41,6 +45,7 @@ class TeamControllerIntegrationTest {
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        incidentTaskRepository.deleteAll();
         alertRepository.deleteAll();
         incidentRepository.deleteAll();
         monitoredServiceRepository.deleteAll();
