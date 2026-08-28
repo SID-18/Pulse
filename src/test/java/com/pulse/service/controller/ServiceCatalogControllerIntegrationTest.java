@@ -1,5 +1,6 @@
 package com.pulse.service.controller;
 
+import com.pulse.alert.repository.AlertRepository;
 import com.pulse.incident.repository.IncidentRepository;
 import com.pulse.service.entity.MonitoredService;
 import com.pulse.service.repository.MonitoredServiceRepository;
@@ -29,10 +30,14 @@ class ServiceCatalogControllerIntegrationTest {
     private IncidentRepository incidentRepository;
 
     @Autowired
+    private AlertRepository alertRepository;
+
+    @Autowired
     private MonitoredServiceRepository monitoredServiceRepository;
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        alertRepository.deleteAll();
         incidentRepository.deleteAll();
         monitoredServiceRepository.deleteAll();
     }

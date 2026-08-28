@@ -1,5 +1,7 @@
 package com.pulse.common.exception;
 
+import com.pulse.alert.exception.AlertNotFoundException;
+import com.pulse.alert.exception.InvalidAlertStatusTransitionException;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.exception.InvalidIncidentStatusTransitionException;
 import com.pulse.service.exception.MonitoredServiceNameAlreadyExistsException;
@@ -22,6 +24,24 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AlertNotFoundException.class)
+    public ProblemDetail handleAlertNotFound(AlertNotFoundException exception) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.NOT_FOUND,
+            exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(InvalidAlertStatusTransitionException.class)
+    public ProblemDetail handleInvalidAlertStatusTransition(
+        InvalidAlertStatusTransitionException exception
+    ) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            exception.getMessage()
+        );
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleInvalidRequestBody(

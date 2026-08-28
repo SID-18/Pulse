@@ -1,5 +1,6 @@
 package com.pulse.incident.controller;
 
+import com.pulse.alert.repository.AlertRepository;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.entity.IncidentSeverity;
 import com.pulse.incident.repository.IncidentRepository;
@@ -34,10 +35,14 @@ class IncidentControllerIntegrationTest {
     private IncidentRepository incidentRepository;
 
     @Autowired
+    private AlertRepository alertRepository;
+
+    @Autowired
     private MonitoredServiceRepository monitoredServiceRepository;
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        alertRepository.deleteAll();
         incidentRepository.deleteAll();
         monitoredServiceRepository.deleteAll();
     }
