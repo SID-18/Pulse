@@ -1,6 +1,7 @@
 package com.pulse.team.controller;
 
 import com.pulse.alert.repository.AlertRepository;
+import com.pulse.comment.repository.IncidentCommentRepository;
 import com.pulse.incident.repository.IncidentRepository;
 import com.pulse.service.repository.MonitoredServiceRepository;
 import com.pulse.team.entity.Team;
@@ -38,6 +39,9 @@ class TeamControllerIntegrationTest {
     private IncidentTaskRepository incidentTaskRepository;
 
     @Autowired
+    private IncidentCommentRepository incidentCommentRepository;
+
+    @Autowired
     private MonitoredServiceRepository monitoredServiceRepository;
 
     @Autowired
@@ -45,6 +49,7 @@ class TeamControllerIntegrationTest {
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        incidentCommentRepository.deleteAll();
         incidentTaskRepository.deleteAll();
         alertRepository.deleteAll();
         incidentRepository.deleteAll();

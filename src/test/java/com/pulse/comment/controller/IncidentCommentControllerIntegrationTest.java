@@ -1,11 +1,11 @@
-package com.pulse.task.controller;
+package com.pulse.comment.controller;
 
 import com.pulse.alert.repository.AlertRepository;
+import com.pulse.comment.entity.IncidentComment;
 import com.pulse.comment.repository.IncidentCommentRepository;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.entity.IncidentSeverity;
 import com.pulse.incident.repository.IncidentRepository;
-import com.pulse.task.entity.IncidentTask;
 import com.pulse.task.repository.IncidentTaskRepository;
 import com.pulse.team.entity.Team;
 import com.pulse.team.repository.TeamRepository;
@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,16 +31,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class IncidentTaskControllerIntegrationTest {
+class IncidentCommentControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private IncidentTaskRepository incidentTaskRepository;
+    private IncidentCommentRepository incidentCommentRepository;
 
     @Autowired
-    private IncidentCommentRepository incidentCommentRepository;
+    private IncidentTaskRepository incidentTaskRepository;
 
     @Autowired
     private AlertRepository alertRepository;
@@ -66,66 +65,55 @@ class IncidentTaskControllerIntegrationTest {
     }
 
     @Test
-    void shouldCreateTaskForIncidentThroughApi() throws Exception {
+    void shouldCreateCommentForIncidentThroughApi() throws Exception {
         Incident incident = saveIncident();
         User user = saveUser();
         String requestBody = """
             {
-              "title": "Check database connection pool usage",
-              "description": "Inspect active and idle connections.",
-              "assignedUserId": "%s"
+              "content": "Connection pool usage is within the expected range.",
+              "authorId": "%s"
             }
             """.formatted(user.getId());
 
-        mockMvc.perform(post("/api/incidents/{id}/tasks", incident.getId())
+        mockMvc.perform(post("/api/incidents/{id}/comments", incident.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.status").value("TODO"))
             .andExpect(jsonPath("$.incidentId").value(incident.getId().toString()))
-            .andExpect(jsonPath("$.assignedUserId").value(user.getId().toString()));
+            .andExpect(jsonPath("$.authorId").value(user.getId().toString()))
+            .andExpect(jsonPath("$.authorName").value("Aarav Sharma"));
     }
 
     @Test
-    void shouldListTasksForIncident() throws Exception {
+    void shouldListCommentsForIncidentInCreationOrder() throws Exception {
         Incident incident = saveIncident();
-        incidentTaskRepository.save(new IncidentTask(
-            "Check logs", "Review application logs.", incident, null
+        User user = saveUser();
+        incidentCommentRepository.save(new IncidentComment(
+            "Investigating the database connection pool.", incident, user
+        ));
+        incidentCommentRepository.save(new IncidentComment(
+            "Pool usage has returned to normal.", incident, user
         ));
 
-        mockMvc.perform(get("/api/incidents/{id}/tasks", incident.getId()))
+        mockMvc.perform(get("/api/incidents/{id}/comments", incident.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].title").value("Check logs"));
+            .andExpect(jsonPath("$[0].content")
+                .value("Investigating the database connection pool."))
+            .andExpect(jsonPath("$[1].content")
+                .value("Pool usage has returned to normal."));
     }
 
     @Test
-    void shouldStartAndCompleteTask() throws Exception {
-        Incident incident = saveIncident();
-        IncidentTask task = incidentTaskRepository.save(new IncidentTask(
-            "Check logs", "Review application logs.", incident, null
-        ));
-
-        mockMvc.perform(patch("/api/tasks/{id}/start", task.getId()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
-
-        mockMvc.perform(patch("/api/tasks/{id}/complete", task.getId()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("DONE"))
-            .andExpect(jsonPath("$.completedAt").isNotEmpty());
-    }
-
-    @Test
-    void shouldReturnNotFoundForUnknownAssignedUser() throws Exception {
+    void shouldReturnNotFoundForUnknownCommentAuthor() throws Exception {
         Incident incident = saveIncident();
         String requestBody = """
             {
-              "title": "Check logs",
-              "assignedUserId": "%s"
+              "content": "Investigating the database connection pool.",
+              "authorId": "%s"
             }
             """.formatted(UUID.randomUUID());
 
-        mockMvc.perform(post("/api/incidents/{id}/tasks", incident.getId())
+        mockMvc.perform(post("/api/incidents/{id}/comments", incident.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
             .andExpect(status().isNotFound())

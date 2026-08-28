@@ -3,6 +3,7 @@ package com.pulse.alert.controller;
 import com.pulse.alert.entity.Alert;
 import com.pulse.alert.entity.AlertSeverity;
 import com.pulse.alert.repository.AlertRepository;
+import com.pulse.comment.repository.IncidentCommentRepository;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.entity.IncidentSeverity;
 import com.pulse.incident.repository.IncidentRepository;
@@ -39,10 +40,14 @@ class AlertControllerIntegrationTest {
     private IncidentTaskRepository incidentTaskRepository;
 
     @Autowired
+    private IncidentCommentRepository incidentCommentRepository;
+
+    @Autowired
     private IncidentRepository incidentRepository;
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        incidentCommentRepository.deleteAll();
         incidentTaskRepository.deleteAll();
         alertRepository.deleteAll();
         incidentRepository.deleteAll();
