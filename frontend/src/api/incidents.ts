@@ -27,3 +27,7 @@ export async function updateIncidentStatus(id: string, action: 'acknowledge' | '
   const response = await fetch(`http://localhost:8080/api/incidents/${id}/${action}`, { method: 'PATCH', headers: { Authorization: `Bearer ${getAccessToken()}` } })
   if (!response.ok) throw new Error('Unable to update incident status.')
 }
+export async function updateTaskStatus(id: string, action: 'start' | 'complete') {
+  const response = await fetch(`http://localhost:8080/api/tasks/${id}/${action}`, { method: 'PATCH', headers: { Authorization: `Bearer ${getAccessToken()}` } })
+  if (!response.ok) throw new Error('Unable to update task status.')
+}
