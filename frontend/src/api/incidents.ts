@@ -5,10 +5,13 @@ export type IncidentAlert = { id:string; severity:string; status:string; message
 export type IncidentTask = { id:string; status:string; title:string }
 export type IncidentEvent = { id:string; type:string; message:string; createdAt:string }
 export type IncidentData = { incident: Incident; comments: IncidentComment[]; alerts: IncidentAlert[]; tasks: IncidentTask[]; events: IncidentEvent[] }
-export async function getIncidents() {
-  const response = await fetch('http://localhost:8080/api/incidents', { headers: { Authorization: `Bearer ${getAccessToken()}` } })
+export type IncidentPage = { content: Incident[]; page:number; totalPages:number; totalElements:number; first:boolean; last:boolean }
+export async function getIncidents(page = 0, status = '', sortBy = 'CREATED_AT', direction = 'DESC') {
+  const params = new URLSearchParams({ page: String(page), size: '6', sortBy, direction })
+  if (status) params.set('status', status)
+  const response = await fetch(`http://localhost:8080/api/incidents?${params}`, { headers: { Authorization: `Bearer ${getAccessToken()}` } })
   if (!response.ok) throw new Error('Unable to load incidents.')
-  return response.json() as Promise<{ content: Incident[] }>
+  return response.json() as Promise<IncidentPage>
 }
 export async function getIncidentData(id: string) {
   const headers = { Authorization: `Bearer ${getAccessToken()}` }
