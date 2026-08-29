@@ -23,3 +23,7 @@ export async function addComment(incidentId: string, content: string) {
   const response = await fetch(`http://localhost:8080/api/incidents/${incidentId}/comments`, { method: 'POST', headers: { Authorization: `Bearer ${getAccessToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) })
   if (!response.ok) throw new Error('Unable to add comment.')
 }
+export async function updateIncidentStatus(id: string, action: 'acknowledge' | 'resolve') {
+  const response = await fetch(`http://localhost:8080/api/incidents/${id}/${action}`, { method: 'PATCH', headers: { Authorization: `Bearer ${getAccessToken()}` } })
+  if (!response.ok) throw new Error('Unable to update incident status.')
+}
