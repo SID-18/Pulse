@@ -38,14 +38,28 @@ public class User {
     @Column(nullable = false, length = 20)
     private UserRole role;
 
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
 
     public User(String name, String email, UserRole role, Team team) {
+        this(name, email, role, team, null);
+    }
+
+    public User(
+        String name,
+        String email,
+        UserRole role,
+        Team team,
+        String passwordHash
+    ) {
         this.name = name;
         this.email = email;
         this.role = role;
         this.team = team;
+        this.passwordHash = passwordHash;
     }
 }

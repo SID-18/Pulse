@@ -11,6 +11,7 @@ import com.pulse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
@@ -36,7 +38,8 @@ public class UserService {
             request.name(),
             request.email(),
             request.role(),
-            team
+            team,
+            passwordEncoder.encode(request.password())
         );
 
         return toResponse(userRepository.save(user));

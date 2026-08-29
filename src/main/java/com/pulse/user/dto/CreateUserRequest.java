@@ -22,6 +22,10 @@ public record CreateUserRequest(
     @NotNull
     UserRole role,
 
+    @NotBlank
+    @Size(min = 12, max = 72)
+    String password,
+
     @NotNull
     UUID teamId
 ) {
