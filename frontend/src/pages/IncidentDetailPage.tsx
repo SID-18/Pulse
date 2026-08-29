@@ -1,11 +1,13 @@
 import { Link, useParams } from 'react-router'
-import { useEffect, useState } from 'react'
-import { getIncidentData, type IncidentData } from '../api/incidents'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { addComment, getIncidentData, type IncidentData } from '../api/incidents'
 
 export function IncidentDetailPage() {
-  const { id = '' } = useParams(); const [data, setData] = useState<IncidentData>(); const [error, setError] = useState('')
-  useEffect(() => { getIncidentData(id).then(setData).catch(reason => setError(reason.message)) }, [id])
-  if (error) return <main><p>{error}</p></main>
-  if (!data) return <main><p>Loading incident...</p></main>
-  return <main><Link to="/incidents">Back to incidents</Link><h1>{data.incident.title}</h1><p>{data.incident.description}</p><h2>Timeline</h2><section className="incident-list">{data.events.map(event => <article className="incident-card" key={event.id}><strong>{event.type.replaceAll('_', ' ')}</strong><p>{event.message}</p><small>{new Date(event.createdAt).toLocaleString()}</small></article>)}</section><h2>Alerts</h2>{data.alerts.map(alert => <p key={alert.id}><strong>{alert.severity} · {alert.status}: </strong>{alert.message}</p>)}<h2>Tasks</h2>{data.tasks.map(task => <p key={task.id}><strong>{task.status}: </strong>{task.title}</p>)}<h2>Comments</h2>{data.comments.map(comment => <p key={comment.id}><strong>{comment.authorName}: </strong>{comment.content}</p>)}</main>
+  const { id = '' } = useParams(); const [data, setData] = useState<IncidentData>(); const [error, setError] = useState(''); const [comment, setComment] = useState('')
+  const load = useCallback(() => getIncidentData(id).then(setData).catch(reason => setError(reason.message)), [id])
+  useEffect(() => { load() }, [load])
+  async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); await addComment(id, comment); setComment(''); load() }
+  if (error) return <main className="workspace"><p>{error}</p></main>
+  if (!data) return <main className="workspace"><p>Loading incident...</p></main>
+  return <main className="workspace"><Link className="back-link" to="/incidents">← All incidents</Link><header className="incident-header"><div><span className={`severity ${data.incident.severity.toLowerCase()}`}>{data.incident.severity}</span><h1>{data.incident.title}</h1><p>{data.incident.description}</p></div><span className={`status ${data.incident.status.toLowerCase()}`}>{data.incident.status}</span></header><div className="detail-grid"><section><h2>Activity timeline</h2><div className="timeline">{data.events.map(event => <article className="timeline-item" key={event.id}><strong>{event.type.replaceAll('_', ' ')}</strong><p>{event.message}</p><small>{new Date(event.createdAt).toLocaleString()}</small></article>)}</div><h2>Updates</h2><form className="composer" onSubmit={submit}><label htmlFor="comment">Add an incident update</label><textarea id="comment" value={comment} onChange={event => setComment(event.target.value)} placeholder="Share what you checked, changed, or observed…" required /><button>Post update</button></form><div className="comments">{data.comments.map(item => <article key={item.id}><strong>{item.authorName}</strong><p>{item.content}</p></article>)}</div></section><aside><section className="summary-card"><h2>Alerts</h2>{data.alerts.length ? data.alerts.map(alert => <p key={alert.id}><strong>{alert.severity} · {alert.status}</strong><br />{alert.message}</p>) : <p>No alerts</p>}</section><section className="summary-card"><h2>Tasks</h2>{data.tasks.length ? data.tasks.map(task => <p key={task.id}><strong>{task.status}</strong><br />{task.title}</p>) : <p>No tasks</p>}</section></aside></div></main>
 }

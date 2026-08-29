@@ -18,3 +18,8 @@ export async function getIncidentData(id: string) {
   const [incident, comments, alerts, tasks, events] = await Promise.all(responses.map(response => response.json()))
   return { incident, comments, alerts, tasks, events } as IncidentData
 }
+
+export async function addComment(incidentId: string, content: string) {
+  const response = await fetch(`http://localhost:8080/api/incidents/${incidentId}/comments`, { method: 'POST', headers: { Authorization: `Bearer ${getAccessToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) })
+  if (!response.ok) throw new Error('Unable to add comment.')
+}
