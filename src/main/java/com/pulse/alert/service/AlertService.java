@@ -5,6 +5,8 @@ import com.pulse.alert.dto.CreateAlertRequest;
 import com.pulse.alert.entity.Alert;
 import com.pulse.alert.exception.AlertNotFoundException;
 import com.pulse.alert.repository.AlertRepository;
+import com.pulse.event.entity.IncidentEventType;
+import com.pulse.event.service.IncidentEventService;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.repository.IncidentRepository;
@@ -22,6 +24,7 @@ public class AlertService {
 
     private final AlertRepository alertRepository;
     private final IncidentRepository incidentRepository;
+    private final IncidentEventService incidentEventService;
 
     @Transactional
     public AlertResponse createAlert(CreateAlertRequest request) {
@@ -29,8 +32,14 @@ public class AlertService {
             .orElseThrow(() -> new IncidentNotFoundException(request.incidentId()));
 
         Alert alert = new Alert(request.message(), request.severity(), incident);
+        Alert savedAlert = alertRepository.save(alert);
+        incidentEventService.record(
+            incident,
+            IncidentEventType.ALERT_FIRED,
+            "Alert fired: " + savedAlert.getMessage()
+        );
 
-        return toResponse(alertRepository.save(alert));
+        return toResponse(savedAlert);
     }
 
     @Transactional(readOnly = true)
@@ -47,6 +56,11 @@ public class AlertService {
         Alert alert = alertRepository.findById(id)
             .orElseThrow(() -> new AlertNotFoundException(id));
         alert.resolve();
+        incidentEventService.record(
+            alert.getIncident(),
+            IncidentEventType.ALERT_RESOLVED,
+            "Alert resolved: " + alert.getMessage()
+        );
 
         return toResponse(alert);
     }

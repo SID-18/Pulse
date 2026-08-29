@@ -4,6 +4,8 @@ import com.pulse.comment.dto.CreateIncidentCommentRequest;
 import com.pulse.comment.dto.IncidentCommentResponse;
 import com.pulse.comment.entity.IncidentComment;
 import com.pulse.comment.repository.IncidentCommentRepository;
+import com.pulse.event.entity.IncidentEventType;
+import com.pulse.event.service.IncidentEventService;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.repository.IncidentRepository;
@@ -24,6 +26,7 @@ public class IncidentCommentService {
     private final IncidentCommentRepository incidentCommentRepository;
     private final IncidentRepository incidentRepository;
     private final UserRepository userRepository;
+    private final IncidentEventService incidentEventService;
 
     @Transactional
     public IncidentCommentResponse createComment(
@@ -38,7 +41,14 @@ public class IncidentCommentService {
             author
         );
 
-        return toResponse(incidentCommentRepository.save(comment));
+        IncidentComment savedComment = incidentCommentRepository.save(comment);
+        incidentEventService.record(
+            incident,
+            IncidentEventType.COMMENT_ADDED,
+            "Comment added by " + author.getName() + "."
+        );
+
+        return toResponse(savedComment);
     }
 
     @Transactional(readOnly = true)

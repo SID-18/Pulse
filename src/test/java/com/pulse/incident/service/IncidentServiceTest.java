@@ -2,6 +2,8 @@ package com.pulse.incident.service;
 
 import com.pulse.incident.dto.CreateIncidentRequest;
 import com.pulse.incident.dto.IncidentResponse;
+import com.pulse.event.entity.IncidentEventType;
+import com.pulse.event.service.IncidentEventService;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.entity.IncidentSeverity;
 import com.pulse.incident.entity.IncidentStatus;
@@ -23,6 +25,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,6 +37,9 @@ class IncidentServiceTest {
 
     @Mock
     private MonitoredServiceRepository monitoredServiceRepository;
+
+    @Mock
+    private IncidentEventService incidentEventService;
 
     @InjectMocks
     private IncidentService incidentService;
@@ -53,6 +59,11 @@ class IncidentServiceTest {
         assertEquals("Payment API failure", response.title());
         assertEquals(IncidentStatus.OPEN, response.status());
         verify(incidentRepository).save(any(Incident.class));
+        verify(incidentEventService).record(
+            any(Incident.class),
+            eq(IncidentEventType.INCIDENT_CREATED),
+            eq("Incident created.")
+        );
     }
 
     @Test
@@ -69,6 +80,11 @@ class IncidentServiceTest {
 
         assertEquals(IncidentStatus.ACKNOWLEDGED, response.status());
         verify(incidentRepository).findById(id);
+        verify(incidentEventService).record(
+            eq(incident),
+            eq(IncidentEventType.INCIDENT_ACKNOWLEDGED),
+            eq("Incident acknowledged.")
+        );
     }
 
     @Test
@@ -108,6 +124,11 @@ class IncidentServiceTest {
 
         assertEquals(service.getId(), response.serviceId());
         assertEquals(service, incident.getService());
+        verify(incidentEventService).record(
+            eq(incident),
+            eq(IncidentEventType.SERVICE_ASSIGNED),
+            eq("Service assigned: Payment API.")
+        );
     }
 
     @Test

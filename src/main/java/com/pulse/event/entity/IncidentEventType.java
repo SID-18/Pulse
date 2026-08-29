@@ -1,0 +1,14 @@
+package com.pulse.event.entity;
+
+public enum IncidentEventType {
+    INCIDENT_CREATED,
+    INCIDENT_ACKNOWLEDGED,
+    INCIDENT_RESOLVED,
+    SERVICE_ASSIGNED,
+    ALERT_FIRED,
+    ALERT_RESOLVED,
+    TASK_CREATED,
+    TASK_STARTED,
+    TASK_COMPLETED,
+    COMMENT_ADDED
+}

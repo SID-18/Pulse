@@ -3,6 +3,7 @@ package com.pulse.comment.controller;
 import com.pulse.alert.repository.AlertRepository;
 import com.pulse.comment.entity.IncidentComment;
 import com.pulse.comment.repository.IncidentCommentRepository;
+import com.pulse.event.repository.IncidentEventRepository;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.entity.IncidentSeverity;
 import com.pulse.incident.repository.IncidentRepository;
@@ -40,6 +41,9 @@ class IncidentCommentControllerIntegrationTest {
     private IncidentCommentRepository incidentCommentRepository;
 
     @Autowired
+    private IncidentEventRepository incidentEventRepository;
+
+    @Autowired
     private IncidentTaskRepository incidentTaskRepository;
 
     @Autowired
@@ -56,6 +60,7 @@ class IncidentCommentControllerIntegrationTest {
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        incidentEventRepository.deleteAll();
         incidentCommentRepository.deleteAll();
         incidentTaskRepository.deleteAll();
         alertRepository.deleteAll();

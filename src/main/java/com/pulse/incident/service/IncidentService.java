@@ -8,6 +8,8 @@ import com.pulse.incident.entity.Incident;
 import com.pulse.incident.entity.IncidentStatus;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.repository.IncidentRepository;
+import com.pulse.event.entity.IncidentEventType;
+import com.pulse.event.service.IncidentEventService;
 import com.pulse.service.entity.MonitoredService;
 import com.pulse.service.exception.MonitoredServiceNotFoundException;
 import com.pulse.service.repository.MonitoredServiceRepository;
@@ -26,6 +28,7 @@ public class IncidentService {
 
     private final IncidentRepository incidentRepository;
     private final MonitoredServiceRepository monitoredServiceRepository;
+    private final IncidentEventService incidentEventService;
 
     @Transactional
     public IncidentResponse createIncident(CreateIncidentRequest request) {
@@ -36,6 +39,11 @@ public class IncidentService {
         );
 
         Incident savedIncident = incidentRepository.save(incident);
+        incidentEventService.record(
+            savedIncident,
+            IncidentEventType.INCIDENT_CREATED,
+            "Incident created."
+        );
 
         return toResponse(savedIncident);
     }
@@ -69,6 +77,11 @@ public class IncidentService {
     public IncidentResponse acknowledgeIncident(UUID id) {
         Incident incident = findIncidentById(id);
         incident.acknowledge();
+        incidentEventService.record(
+            incident,
+            IncidentEventType.INCIDENT_ACKNOWLEDGED,
+            "Incident acknowledged."
+        );
 
         return toResponse(incident);
     }
@@ -77,6 +90,11 @@ public class IncidentService {
     public IncidentResponse resolveIncident(UUID id) {
         Incident incident = findIncidentById(id);
         incident.resolve();
+        incidentEventService.record(
+            incident,
+            IncidentEventType.INCIDENT_RESOLVED,
+            "Incident resolved."
+        );
 
         return toResponse(incident);
     }
@@ -92,6 +110,11 @@ public class IncidentService {
             );
 
         incident.assignService(service);
+        incidentEventService.record(
+            incident,
+            IncidentEventType.SERVICE_ASSIGNED,
+            "Service assigned: " + service.getName() + "."
+        );
 
         return toResponse(incident);
     }

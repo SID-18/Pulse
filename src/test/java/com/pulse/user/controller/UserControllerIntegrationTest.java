@@ -2,6 +2,7 @@ package com.pulse.user.controller;
 
 import com.pulse.alert.repository.AlertRepository;
 import com.pulse.comment.repository.IncidentCommentRepository;
+import com.pulse.event.repository.IncidentEventRepository;
 import com.pulse.incident.repository.IncidentRepository;
 import com.pulse.service.repository.MonitoredServiceRepository;
 import com.pulse.team.entity.Team;
@@ -47,6 +48,9 @@ class UserControllerIntegrationTest {
     private IncidentCommentRepository incidentCommentRepository;
 
     @Autowired
+    private IncidentEventRepository incidentEventRepository;
+
+    @Autowired
     private MonitoredServiceRepository monitoredServiceRepository;
 
     @Autowired
@@ -57,6 +61,7 @@ class UserControllerIntegrationTest {
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        incidentEventRepository.deleteAll();
         incidentCommentRepository.deleteAll();
         incidentTaskRepository.deleteAll();
         alertRepository.deleteAll();

@@ -3,6 +3,8 @@ package com.pulse.task.service;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.repository.IncidentRepository;
+import com.pulse.event.entity.IncidentEventType;
+import com.pulse.event.service.IncidentEventService;
 import com.pulse.task.dto.CreateIncidentTaskRequest;
 import com.pulse.task.dto.IncidentTaskResponse;
 import com.pulse.task.entity.IncidentTask;
@@ -24,6 +26,7 @@ public class IncidentTaskService {
     private final IncidentTaskRepository incidentTaskRepository;
     private final IncidentRepository incidentRepository;
     private final UserRepository userRepository;
+    private final IncidentEventService incidentEventService;
 
     @Transactional
     public IncidentTaskResponse createTask(
@@ -45,7 +48,14 @@ public class IncidentTaskService {
             assignedUser
         );
 
-        return toResponse(incidentTaskRepository.save(task));
+        IncidentTask savedTask = incidentTaskRepository.save(task);
+        incidentEventService.record(
+            incident,
+            IncidentEventType.TASK_CREATED,
+            "Task created: " + savedTask.getTitle()
+        );
+
+        return toResponse(savedTask);
     }
 
     @Transactional(readOnly = true)
@@ -62,6 +72,11 @@ public class IncidentTaskService {
     public IncidentTaskResponse startTask(UUID id) {
         IncidentTask task = findTaskById(id);
         task.start();
+        incidentEventService.record(
+            task.getIncident(),
+            IncidentEventType.TASK_STARTED,
+            "Task started: " + task.getTitle()
+        );
 
         return toResponse(task);
     }
@@ -70,6 +85,11 @@ public class IncidentTaskService {
     public IncidentTaskResponse completeTask(UUID id) {
         IncidentTask task = findTaskById(id);
         task.complete();
+        incidentEventService.record(
+            task.getIncident(),
+            IncidentEventType.TASK_COMPLETED,
+            "Task completed: " + task.getTitle()
+        );
 
         return toResponse(task);
     }
