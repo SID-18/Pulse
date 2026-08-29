@@ -31,10 +31,11 @@ public class IncidentCommentService {
     @Transactional
     public IncidentCommentResponse createComment(
         UUID incidentId,
+        String authorEmail,
         CreateIncidentCommentRequest request
     ) {
         Incident incident = findIncidentById(incidentId);
-        User author = findUserById(request.authorId());
+        User author = findUserByEmail(authorEmail);
         IncidentComment comment = new IncidentComment(
             request.content(),
             incident,
@@ -67,9 +68,9 @@ public class IncidentCommentService {
             .orElseThrow(() -> new IncidentNotFoundException(id));
     }
 
-    private User findUserById(UUID id) {
-        return userRepository.findById(id)
-            .orElseThrow(() -> new UserNotFoundException(id));
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+            .orElseThrow(() -> new UserNotFoundException(email));
     }
 
     private IncidentCommentResponse toResponse(IncidentComment comment) {

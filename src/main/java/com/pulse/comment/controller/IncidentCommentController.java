@@ -6,6 +6,7 @@ import com.pulse.comment.service.IncidentCommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,9 +29,14 @@ public class IncidentCommentController {
     @ResponseStatus(HttpStatus.CREATED)
     public IncidentCommentResponse createComment(
         @PathVariable UUID incidentId,
-        @Valid @RequestBody CreateIncidentCommentRequest request
+        @Valid @RequestBody CreateIncidentCommentRequest request,
+        Authentication authentication
     ) {
-        return incidentCommentService.createComment(incidentId, request);
+        return incidentCommentService.createComment(
+            incidentId,
+            authentication.getName(),
+            request
+        );
     }
 
     @GetMapping("/api/incidents/{incidentId}/comments")

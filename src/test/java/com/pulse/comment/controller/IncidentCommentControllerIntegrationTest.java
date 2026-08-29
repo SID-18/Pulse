@@ -23,10 +23,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.UUID;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -77,12 +76,12 @@ class IncidentCommentControllerIntegrationTest {
         User user = saveUser();
         String requestBody = """
             {
-              "content": "Connection pool usage is within the expected range.",
-              "authorId": "%s"
+              "content": "Connection pool usage is within the expected range."
             }
-            """.formatted(user.getId());
+            """;
 
         mockMvc.perform(post("/api/incidents/{id}/comments", incident.getId())
+                .with(user("aarav@example.com").roles("ENGINEER"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
             .andExpect(status().isCreated())
@@ -115,12 +114,12 @@ class IncidentCommentControllerIntegrationTest {
         Incident incident = saveIncident();
         String requestBody = """
             {
-              "content": "Investigating the database connection pool.",
-              "authorId": "%s"
+              "content": "Investigating the database connection pool."
             }
-            """.formatted(UUID.randomUUID());
+            """;
 
         mockMvc.perform(post("/api/incidents/{id}/comments", incident.getId())
+                .with(user("missing@example.com").roles("ENGINEER"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
             .andExpect(status().isNotFound())

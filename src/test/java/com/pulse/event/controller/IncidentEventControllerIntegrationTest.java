@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -75,12 +76,12 @@ class IncidentEventControllerIntegrationTest {
         User user = saveUser();
         String requestBody = """
             {
-              "content": "Investigating the payment API latency spike.",
-              "authorId": "%s"
+              "content": "Investigating the payment API latency spike."
             }
-            """.formatted(user.getId());
+            """;
 
         mockMvc.perform(post("/api/incidents/{id}/comments", incident.getId())
+                .with(user("aarav@example.com").roles("ENGINEER"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
             .andExpect(status().isCreated());
