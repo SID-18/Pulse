@@ -1,6 +1,7 @@
 package com.pulse.event.service;
 
 import com.pulse.event.dto.IncidentEventResponse;
+import com.pulse.event.domain.IncidentEventRecorded;
 import com.pulse.event.entity.IncidentEvent;
 import com.pulse.event.entity.IncidentEventType;
 import com.pulse.event.repository.IncidentEventRepository;
@@ -8,6 +9,7 @@ import com.pulse.incident.entity.Incident;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.repository.IncidentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ public class IncidentEventService {
 
     private final IncidentEventRepository incidentEventRepository;
     private final IncidentRepository incidentRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public void record(
@@ -27,7 +30,17 @@ public class IncidentEventService {
         IncidentEventType type,
         String message
     ) {
-        incidentEventRepository.save(new IncidentEvent(incident, type, message));
+        IncidentEvent event = incidentEventRepository.save(
+            new IncidentEvent(incident, type, message)
+        );
+
+        applicationEventPublisher.publishEvent(new IncidentEventRecorded(
+            event.getId(),
+            incident.getId(),
+            event.getType(),
+            event.getMessage(),
+            event.getCreatedAt()
+        ));
     }
 
     @Transactional(readOnly = true)
