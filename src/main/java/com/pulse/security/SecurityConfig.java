@@ -47,6 +47,7 @@ public class SecurityConfig {
             .httpBasic(basic -> basic.disable())
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/ws").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/**")
                     .hasAnyRole("ADMIN", "MANAGER", "ENGINEER", "VIEWER")
                 .requestMatchers("/api/users/**").hasRole("ADMIN")

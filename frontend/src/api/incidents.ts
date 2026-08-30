@@ -1,4 +1,4 @@
-import { authenticatedFetch } from './client'
+import { ApiRequestError, authenticatedFetch } from './client'
 export type Incident = { id:string; title:string; description:string; severity:string; status:string; createdAt:string }
 export type IncidentComment = { id:string; authorName:string; content:string }
 export type IncidentAlert = { id:string; severity:string; status:string; message:string }
@@ -10,13 +10,14 @@ export async function getIncidents(page = 0, status = '', sortBy = 'CREATED_AT',
   const params = new URLSearchParams({ page: String(page), size: '6', sortBy, direction })
   if (status) params.set('status', status)
   const response = await authenticatedFetch(`http://localhost:8080/api/incidents?${params}`)
-  if (!response.ok) throw new Error('Unable to load incidents.')
+  if (!response.ok) throw new ApiRequestError('Unable to load incidents.', response.status)
   return response.json() as Promise<IncidentPage>
 }
 export async function getIncidentData(id: string) {
   const requests = ['incidents/' + id, 'incidents/' + id + '/comments', 'alerts?incidentId=' + id, 'incidents/' + id + '/tasks', 'incidents/' + id + '/events']
   const responses = await Promise.all(requests.map(path => authenticatedFetch('http://localhost:8080/api/' + path)))
-  if (responses.some(response => !response.ok)) throw new Error('Unable to load incident details.')
+  const failedResponse = responses.find(response => !response.ok)
+  if (failedResponse) throw new ApiRequestError('Unable to load incident details.', failedResponse.status)
   const [incident, comments, alerts, tasks, events] = await Promise.all(responses.map(response => response.json()))
   return { incident, comments, alerts, tasks, events } as IncidentData
 }
