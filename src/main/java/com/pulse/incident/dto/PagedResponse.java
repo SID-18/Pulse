@@ -2,6 +2,7 @@ package com.pulse.incident.dto;
 
 import org.springframework.data.domain.Page;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.function.Function;
 
@@ -13,7 +14,7 @@ public record PagedResponse<T>(
     int totalPages,
     boolean first,
     boolean last
-) {
+) implements Serializable {
     public static <S, T> PagedResponse<T> from(
         Page<S> page,
         Function<S, T> mapper

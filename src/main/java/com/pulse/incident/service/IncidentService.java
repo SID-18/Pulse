@@ -14,6 +14,8 @@ import com.pulse.service.entity.MonitoredService;
 import com.pulse.service.exception.MonitoredServiceNotFoundException;
 import com.pulse.service.repository.MonitoredServiceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -31,6 +33,7 @@ public class IncidentService {
     private final IncidentEventService incidentEventService;
 
     @Transactional
+    @CacheEvict(cacheNames = "incidentPages", allEntries = true)
     public IncidentResponse createIncident(CreateIncidentRequest request) {
         Incident incident = new Incident(
             request.title(),
@@ -49,6 +52,14 @@ public class IncidentService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(
+        cacheNames = "incidentPages",
+        key = "'status=' + (#p0 == null ? 'ALL' : #p0.name())"
+            + " + ':page=' + #p1"
+            + " + ':size=' + #p2"
+            + " + ':sort=' + #p3.name()"
+            + " + ':direction=' + #p4.name()"
+    )
     public PagedResponse<IncidentResponse> getIncidents(
         IncidentStatus status,
         int page,
@@ -74,6 +85,7 @@ public class IncidentService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "incidentPages", allEntries = true)
     public IncidentResponse acknowledgeIncident(UUID id) {
         Incident incident = findIncidentById(id);
         incident.acknowledge();
@@ -87,6 +99,7 @@ public class IncidentService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "incidentPages", allEntries = true)
     public IncidentResponse resolveIncident(UUID id) {
         Incident incident = findIncidentById(id);
         incident.resolve();
@@ -100,6 +113,7 @@ public class IncidentService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "incidentPages", allEntries = true)
     public IncidentResponse assignService(UUID incidentId, UUID serviceId) {
         Incident incident = findIncidentById(incidentId);
 
