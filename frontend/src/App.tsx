@@ -4,6 +4,7 @@ import { ProtectedRoute } from './auth/ProtectedRoute'
 import { IncidentsPage } from './pages/IncidentsPage'
 import { LoginPage } from './pages/LoginPage'
 import { IncidentDetailPage } from './pages/IncidentDetailPage'
+import { MonitoringPage } from './pages/MonitoringPage'
 
 function SessionExpiryRedirect() {
   const navigate = useNavigate()
@@ -21,7 +22,7 @@ function SessionExpiryRedirect() {
 }
 
 function App() {
-  return <><SessionExpiryRedirect /><Routes><Route path="/login" element={<LoginPage />} /><Route path="/incidents" element={<ProtectedRoute><IncidentsPage /></ProtectedRoute>} /><Route path="/incidents/:id" element={<ProtectedRoute><IncidentDetailPage /></ProtectedRoute>} /><Route path="*" element={<Navigate to="/login" replace />} /></Routes></>
+  return <><SessionExpiryRedirect /><Routes><Route path="/login" element={<LoginPage />} /><Route path="/incidents" element={<ProtectedRoute><IncidentsPage /></ProtectedRoute>} /><Route path="/incidents/:id" element={<ProtectedRoute><IncidentDetailPage /></ProtectedRoute>} /><Route path="/monitoring" element={<ProtectedRoute><MonitoringPage /></ProtectedRoute>} /><Route path="*" element={<Navigate to="/login" replace />} /></Routes></>
 }
 
 export default App

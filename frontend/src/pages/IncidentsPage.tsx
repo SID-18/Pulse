@@ -37,7 +37,7 @@ export function IncidentsPage() {
 
   return <main>
     <p>PULSE / COMMAND CENTER</p><h1>Incidents</h1>
-    <Link to="/login" onClick={clearAccessToken}>Sign out</Link>
+    <p><Link to="/monitoring">Service health</Link> · <Link to="/login" onClick={clearAccessToken}>Sign out</Link></p>
     <section className="metric-row">
       <article><span>Total incidents</span><strong>{data?.totalElements ?? 0}</strong></article>
       <article><span>Open on this page</span><strong>{open}</strong></article>

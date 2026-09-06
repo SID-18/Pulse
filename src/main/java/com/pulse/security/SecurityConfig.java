@@ -53,6 +53,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
                 .requestMatchers("/api/teams/**", "/api/services/**", "/api/alerts/**")
                     .hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/api/monitoring/**")
+                    .hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/api/incidents/*/comments")
                     .hasAnyRole("ADMIN", "MANAGER", "ENGINEER")
                 .requestMatchers("/api/tasks/*/start", "/api/tasks/*/complete")
