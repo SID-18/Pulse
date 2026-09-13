@@ -5,6 +5,13 @@
 GitHub Actions runs the backend and notification-service test suites, plus the
 frontend lint and production build, for every push and pull request to `main`.
 
+## API documentation
+
+When Pulse is running, open `http://localhost:8080/swagger-ui.html` to browse
+and try the API. Use `/api/auth/login` to obtain a JWT, then click **Authorize**
+and paste the token to try protected endpoints. The machine-readable OpenAPI
+description is available at `http://localhost:8080/v3/api-docs`.
+
 ## Run the complete platform with Docker
 
 Docker Compose is an alternative to the Windows-local PostgreSQL, Memurai, Kafka,
