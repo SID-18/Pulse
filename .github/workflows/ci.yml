@@ -29,7 +29,7 @@ jobs:
             notification-service/pom.xml
 
       - name: Test Pulse backend
-        run: ./mvnw --batch-mode test
+        run: chmod +x mvnw && ./mvnw --batch-mode test
 
       - name: Test notification service
         working-directory: notification-service
