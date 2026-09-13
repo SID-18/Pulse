@@ -28,7 +28,7 @@ services:
       retries: 12
 
   kafka:
-    image: apache/kafka:4.1.1
+    image: apache/kafka:4.2.1
     # Docker creates named volumes as root; use root only for this local KRaft
     # broker so it can initialize its persisted metadata directory.
     user: "0:0"

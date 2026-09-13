@@ -3,6 +3,7 @@ package com.pulse.event.controller;
 import com.pulse.alert.repository.AlertRepository;
 import com.pulse.comment.repository.IncidentCommentRepository;
 import com.pulse.event.repository.IncidentEventRepository;
+import com.pulse.event.outbox.OutboxEventRepository;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.entity.IncidentSeverity;
 import com.pulse.incident.repository.IncidentRepository;
@@ -42,6 +43,9 @@ class IncidentEventControllerIntegrationTest {
     private IncidentEventRepository incidentEventRepository;
 
     @Autowired
+    private OutboxEventRepository outboxEventRepository;
+
+    @Autowired
     private IncidentCommentRepository incidentCommentRepository;
 
     @Autowired
@@ -61,6 +65,7 @@ class IncidentEventControllerIntegrationTest {
 
     @BeforeEach
     void clearTemporaryDatabase() {
+        outboxEventRepository.deleteAll();
         incidentEventRepository.deleteAll();
         incidentCommentRepository.deleteAll();
         incidentTaskRepository.deleteAll();

@@ -1,15 +1,15 @@
 package com.pulse.event.service;
 
 import com.pulse.event.dto.IncidentEventResponse;
-import com.pulse.event.domain.IncidentEventRecorded;
 import com.pulse.event.entity.IncidentEvent;
 import com.pulse.event.entity.IncidentEventType;
+import com.pulse.event.outbox.OutboxEvent;
+import com.pulse.event.outbox.OutboxEventRepository;
 import com.pulse.event.repository.IncidentEventRepository;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.repository.IncidentRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,12 +17,24 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class IncidentEventService {
 
     private final IncidentEventRepository incidentEventRepository;
     private final IncidentRepository incidentRepository;
-    private final ApplicationEventPublisher applicationEventPublisher;
+    private final OutboxEventRepository outboxEventRepository;
+    private final String incidentEventsTopic;
+
+    public IncidentEventService(
+        IncidentEventRepository incidentEventRepository,
+        IncidentRepository incidentRepository,
+        OutboxEventRepository outboxEventRepository,
+        @Value("${pulse.kafka.topics.incident-events}") String incidentEventsTopic
+    ) {
+        this.incidentEventRepository = incidentEventRepository;
+        this.incidentRepository = incidentRepository;
+        this.outboxEventRepository = outboxEventRepository;
+        this.incidentEventsTopic = incidentEventsTopic;
+    }
 
     @Transactional
     public void record(
@@ -34,9 +46,10 @@ public class IncidentEventService {
             new IncidentEvent(incident, type, message)
         );
 
-        applicationEventPublisher.publishEvent(new IncidentEventRecorded(
+        outboxEventRepository.save(new OutboxEvent(
             event.getId(),
             incident.getId(),
+            incidentEventsTopic,
             event.getType(),
             event.getMessage(),
             event.getCreatedAt()

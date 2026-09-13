@@ -29,4 +29,24 @@ class IncidentNotificationConsumerTest {
         assertEquals(1, notificationStore.getLatest().size());
         assertEquals("ALERT_FIRED", notificationStore.getLatest().getFirst().type());
     }
+
+    @Test
+    void shouldIgnoreADuplicateEventId() {
+        NotificationStore notificationStore = new NotificationStore();
+        IncidentNotificationConsumer consumer = new IncidentNotificationConsumer(
+            notificationStore
+        );
+        NotificationEvent event = new NotificationEvent(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "INCIDENT_CREATED",
+            "Incident created.",
+            Instant.parse("2026-09-13T09:00:00Z")
+        );
+
+        consumer.consume(event);
+        consumer.consume(event);
+
+        assertEquals(1, notificationStore.getLatest().size());
+    }
 }

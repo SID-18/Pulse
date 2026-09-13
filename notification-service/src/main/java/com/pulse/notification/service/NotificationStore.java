@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 @Service
@@ -16,8 +19,13 @@ public class NotificationStore {
 
     private final ConcurrentLinkedDeque<NotificationResponse> notifications =
         new ConcurrentLinkedDeque<>();
+    private final Set<UUID> processedEventIds = ConcurrentHashMap.newKeySet();
 
-    public void record(NotificationEvent event) {
+    public boolean record(NotificationEvent event) {
+        if (!processedEventIds.add(event.eventId())) {
+            return false;
+        }
+
         notifications.addFirst(new NotificationResponse(
             event.eventId(),
             event.incidentId(),
@@ -27,8 +35,12 @@ public class NotificationStore {
             Instant.now()
         ));
         while (notifications.size() > MAX_NOTIFICATIONS) {
-            notifications.pollLast();
+            NotificationResponse removed = notifications.pollLast();
+            if (removed != null) {
+                processedEventIds.remove(removed.eventId());
+            }
         }
+        return true;
     }
 
     public List<NotificationResponse> getLatest() {

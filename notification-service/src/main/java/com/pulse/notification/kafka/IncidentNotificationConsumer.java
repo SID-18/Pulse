@@ -21,7 +21,10 @@ public class IncidentNotificationConsumer {
 
     @KafkaListener(topics = "${pulse.kafka.topics.incident-events}")
     public void consume(NotificationEvent event) {
-        notificationStore.record(event);
+        if (!notificationStore.record(event)) {
+            log.info("Duplicate notification event ignored: eventId={}", event.eventId());
+            return;
+        }
         log.info(
             "Notification queued: incidentId={}, type={}, message={}",
             event.incidentId(),
