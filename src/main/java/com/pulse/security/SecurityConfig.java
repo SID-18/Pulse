@@ -46,6 +46,9 @@ public class SecurityConfig {
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
             .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info")
+                    .permitAll()
+                .requestMatchers("/actuator/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
                     .permitAll()
                 .requestMatchers("/api/auth/**").permitAll()

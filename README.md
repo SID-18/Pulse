@@ -12,6 +12,20 @@ and try the API. Use `/api/auth/login` to obtain a JWT, then click **Authorize**
 and paste the token to try protected endpoints. The machine-readable OpenAPI
 description is available at `http://localhost:8080/v3/api-docs`.
 
+## Observability
+
+Pulse exposes lightweight operational endpoints through Spring Boot Actuator:
+
+- `GET /actuator/health` — public liveness/readiness health summary, suitable
+  for Docker or a load balancer.
+- `GET /actuator/info` — public non-sensitive application metadata.
+- `GET /actuator/prometheus` — Prometheus-format metrics. This requires an
+  administrator or manager JWT because metrics can reveal operational details.
+
+The health endpoint checks the application's dependencies, including the
+database, Redis, and Kafka. Detailed health information is returned only to an
+authenticated administrator or manager.
+
 ## Run the complete platform with Docker
 
 Docker Compose is an alternative to the Windows-local PostgreSQL, Memurai, Kafka,
