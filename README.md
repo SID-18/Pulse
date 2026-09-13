@@ -1,5 +1,10 @@
 # Pulse
 
+## Continuous integration
+
+GitHub Actions runs the backend and notification-service test suites, plus the
+frontend lint and production build, for every push and pull request to `main`.
+
 ## Run the complete platform with Docker
 
 Docker Compose is an alternative to the Windows-local PostgreSQL, Memurai, Kafka,
