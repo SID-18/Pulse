@@ -61,6 +61,8 @@ services:
       PULSE_REDIS_HOST: redis
       PULSE_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       PULSE_JWT_SECRET: ${PULSE_JWT_SECRET}
+      PULSE_METRICS_USERNAME: ${PULSE_METRICS_USERNAME:-pulse-metrics}
+      PULSE_METRICS_PASSWORD: ${PULSE_METRICS_PASSWORD:-PulseMetricsDevOnly!2026}
       PULSE_OLLAMA_BASE_URL: http://host.docker.internal:11434
       PULSE_OLLAMA_MODEL: ${PULSE_OLLAMA_MODEL}
       PULSE_BOOTSTRAP_ADMIN_NAME: ${PULSE_BOOTSTRAP_ADMIN_NAME:-Pulse Docker Admin}
@@ -79,6 +81,38 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+
+  prometheus:
+    image: prom/prometheus:v3.13.3
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/metrics-password:/etc/prometheus/secrets/metrics-password:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: on-failure
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:13.2.1
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-GrafanaDevOnly!2026}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    restart: on-failure
+    depends_on:
+      - prometheus
 
   notification-service:
     build:
@@ -106,3 +140,5 @@ volumes:
   postgres-data:
   redis-data:
   kafka-data:
+  prometheus-data:
+  grafana-data:

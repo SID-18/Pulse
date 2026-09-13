@@ -1,0 +1,57 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "pulse-prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "JVM heap used",
+      "targets": [{ "expr": "sum(jvm_memory_used_bytes{application=\"pulse\",area=\"heap\"})", "refId": "A" }],
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "pulse-prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "title": "HTTP request rate",
+      "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{application=\"pulse\"}[1m]))", "refId": "A" }],
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "pulse-prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "id": 3,
+      "title": "Active database connections",
+      "targets": [{ "expr": "hikaricp_connections_active{application=\"pulse\"}", "refId": "A" }],
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "pulse-prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "id": 4,
+      "title": "HTTP 5xx errors per second",
+      "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{application=\"pulse\",status=~\"5..\"}[5m]))", "refId": "A" }],
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "pulse-prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "id": 5,
+      "title": "Application uptime",
+      "targets": [{ "expr": "process_uptime_seconds{application=\"pulse\"}", "refId": "A" }],
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 41,
+  "tags": ["pulse", "observability"],
+  "time": { "from": "now-15m", "to": "now" },
+  "title": "Pulse Overview",
+  "uid": "pulse-overview",
+  "version": 1
+}

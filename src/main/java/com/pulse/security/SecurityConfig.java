@@ -2,14 +2,20 @@ package com.pulse.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -25,8 +31,39 @@ public class SecurityConfig {
     @Value("${pulse.security.enabled:true}")
     private boolean securityEnabled;
 
+    @Value("${pulse.metrics.username:pulse-metrics}")
+    private String metricsUsername;
+
+    @Value("${pulse.metrics.password}")
+    private String metricsPassword;
+
     @Bean
-    SecurityFilterChain securityFilterChain(
+    @Order(1)
+    SecurityFilterChain actuatorSecurityFilterChain(
+        HttpSecurity http,
+        JwtAuthenticationFilter jwtAuthenticationFilter,
+        DaoAuthenticationProvider metricsAuthenticationProvider
+    ) throws Exception {
+        return http
+            .securityMatcher("/actuator/**")
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .httpBasic(Customizer.withDefaults())
+            .authenticationProvider(metricsAuthenticationProvider)
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info")
+                    .permitAll()
+                .requestMatchers("/actuator/prometheus")
+                    .hasAnyRole("ADMIN", "MANAGER", "METRICS")
+                .anyRequest().hasRole("METRICS"))
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .build();
+    }
+
+    @Bean
+    @Order(2)
+    SecurityFilterChain applicationSecurityFilterChain(
         HttpSecurity http,
         JwtAuthenticationFilter jwtAuthenticationFilter
     ) throws Exception {
@@ -46,9 +83,6 @@ public class SecurityConfig {
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info")
-                    .permitAll()
-                .requestMatchers("/actuator/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
                     .permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
@@ -74,6 +108,24 @@ public class SecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    UserDetailsService metricsUserDetailsService(PasswordEncoder passwordEncoder) {
+        return new InMemoryUserDetailsManager(User.withUsername(metricsUsername)
+            .password(passwordEncoder.encode(metricsPassword))
+            .roles("METRICS")
+            .build());
+    }
+
+    @Bean
+    DaoAuthenticationProvider metricsAuthenticationProvider(
+        @Qualifier("metricsUserDetailsService") UserDetailsService metricsUserDetailsService,
+        PasswordEncoder passwordEncoder
+    ) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(metricsUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
     }
 
     @Bean

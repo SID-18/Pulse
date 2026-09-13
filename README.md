@@ -26,6 +26,31 @@ The health endpoint checks the application's dependencies, including the
 database, Redis, and Kafka. Detailed health information is returned only to an
 authenticated administrator or manager.
 
+## Metrics dashboard
+
+Docker Compose can also start a local Prometheus and Grafana stack. Prometheus
+scrapes the backend every 15 seconds using a dedicated `pulse-metrics` account;
+Grafana is provisioned with the **Pulse Overview** dashboard.
+
+Before the first dashboard startup, create the local Prometheus password file.
+Its value must match `PULSE_METRICS_PASSWORD` in `.env`:
+
+```powershell
+Copy-Item -LiteralPath ".\\observability\\prometheus\\metrics-password.example" -Destination ".\\observability\\prometheus\\metrics-password"
+```
+
+The example uses a development-only password. Change it in both `.env` and the
+untracked `metrics-password` file before sharing an environment. Then run:
+
+```powershell
+docker compose up --build
+```
+
+Open Prometheus at `http://localhost:9090/targets` and confirm both Pulse
+services are **UP**. Open Grafana at `http://localhost:3000`, sign in with the
+`GRAFANA_ADMIN_USER` and `GRAFANA_ADMIN_PASSWORD` values from `.env`, then open
+**Dashboards → Pulse → Pulse Overview**.
+
 ## Run the complete platform with Docker
 
 Docker Compose is an alternative to the Windows-local PostgreSQL, Memurai, Kafka,

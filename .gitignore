@@ -35,3 +35,4 @@ build/
 ### Local secrets and machine-specific configuration ###
 .env
 application-local.properties
+observability/prometheus/metrics-password
