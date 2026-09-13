@@ -60,6 +60,7 @@ services:
       PULSE_DB_PASSWORD: ${POSTGRES_PASSWORD}
       PULSE_REDIS_HOST: redis
       PULSE_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PULSE_OTEL_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
       PULSE_JWT_SECRET: ${PULSE_JWT_SECRET}
       PULSE_METRICS_USERNAME: ${PULSE_METRICS_USERNAME:-pulse-metrics}
       PULSE_METRICS_PASSWORD: ${PULSE_METRICS_PASSWORD:-PulseMetricsDevOnly!2026}
@@ -81,6 +82,25 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+      otel-collector:
+        condition: service_started
+
+  tempo:
+    image: grafana/tempo:2.7.2
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    volumes:
+      - ./observability/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo-data:/var/tempo
+    restart: on-failure
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.160.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./observability/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    restart: on-failure
+    depends_on:
+      - tempo
 
   alertmanager:
     image: prom/alertmanager:v0.34.0
@@ -135,11 +155,14 @@ services:
       dockerfile: notification-service/Dockerfile
     environment:
       PULSE_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PULSE_OTEL_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "8081:8081"
     restart: on-failure
     depends_on:
       kafka:
+        condition: service_started
+      otel-collector:
         condition: service_started
 
   frontend:
@@ -158,3 +181,4 @@ volumes:
   prometheus-data:
   grafana-data:
   alertmanager-data:
+  tempo-data:

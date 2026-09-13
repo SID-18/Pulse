@@ -63,6 +63,18 @@ Open `http://localhost:9090/alerts` to see alert-rule state and
 `http://localhost:9093` to see alerts routed to Alertmanager. A production
 deployment would add a real receiver and store its credentials outside Git.
 
+## Distributed tracing
+
+Pulse uses Spring Boot's OpenTelemetry support to create traces for HTTP,
+database, and observed Kafka work. Docker Compose sends those traces to an
+OpenTelemetry Collector, which batches and stores them in Tempo. Grafana has a
+provisioned **Pulse Tempo** data source; use **Explore**, select that data
+source, and search for `service.name = "pulse"` or
+`service.name = "pulse-notification-service"`.
+
+Sampling is set to 100% for this local learning environment. Production systems
+normally choose a lower rate or tail-based sampling to control storage costs.
+
 ## Run the complete platform with Docker
 
 Docker Compose is an alternative to the Windows-local PostgreSQL, Memurai, Kafka,
