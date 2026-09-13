@@ -1,0 +1,42 @@
+groups:
+  - name: pulse-platform
+    rules:
+      - alert: PulseBackendDown
+        expr: up{job="pulse-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: pulse-backend
+        annotations:
+          summary: Pulse backend is unreachable
+          description: Prometheus has been unable to scrape the Pulse backend for one minute.
+
+      - alert: PulseNotificationServiceDown
+        expr: up{job="pulse-notification-service"} == 0
+        for: 1m
+        labels:
+          severity: warning
+          service: pulse-notification-service
+        annotations:
+          summary: Pulse notification service is unreachable
+          description: Prometheus has been unable to scrape the notification service for one minute.
+
+      - alert: PulseHighHttp5xxRate
+        expr: sum(rate(http_server_requests_seconds_count{application="pulse",status=~"5.."}[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: pulse-backend
+        annotations:
+          summary: Pulse is returning elevated server errors
+          description: Pulse has returned more than 0.1 HTTP 5xx responses per second for five minutes.
+
+      - alert: PulseDatabaseConnectionPressure
+        expr: hikaricp_connections_active{application="pulse"} / hikaricp_connections_max{application="pulse"} > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: pulse-backend
+        annotations:
+          summary: Pulse database connection pool is under pressure
+          description: More than 80 percent of the HikariCP connection pool has been active for five minutes.

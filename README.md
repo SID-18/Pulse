@@ -51,6 +51,18 @@ services are **UP**. Open Grafana at `http://localhost:3000`, sign in with the
 `GRAFANA_ADMIN_USER` and `GRAFANA_ADMIN_PASSWORD` values from `.env`, then open
 **Dashboards → Pulse → Pulse Overview**.
 
+## Alerting
+
+Prometheus evaluates Pulse alert rules every 15 seconds and sends active alerts
+to Alertmanager. The initial local rules detect an unavailable backend or
+notification service, sustained HTTP 5xx responses, and database connection
+pool pressure. Alertmanager is intentionally configured as a local dashboard
+only; it does not claim to send email, Slack, or PagerDuty notifications.
+
+Open `http://localhost:9090/alerts` to see alert-rule state and
+`http://localhost:9093` to see alerts routed to Alertmanager. A production
+deployment would add a real receiver and store its credentials outside Git.
+
 ## Run the complete platform with Docker
 
 Docker Compose is an alternative to the Windows-local PostgreSQL, Memurai, Kafka,
