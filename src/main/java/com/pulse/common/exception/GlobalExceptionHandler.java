@@ -6,6 +6,7 @@ import com.pulse.ai.exception.AiServiceUnavailableException;
 import com.pulse.ai.exception.RagServiceUnavailableException;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.exception.InvalidIncidentStatusTransitionException;
+import com.pulse.incident.exception.InvalidIncidentOwnerException;
 import com.pulse.service.exception.MonitoredServiceNameAlreadyExistsException;
 import com.pulse.service.exception.MonitoredServiceNotFoundException;
 import com.pulse.team.exception.TeamNameAlreadyExistsException;
@@ -160,6 +161,16 @@ public class GlobalExceptionHandler {
     ) {
         return ProblemDetail.forStatusAndDetail(
             HttpStatus.CONFLICT,
+            exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(InvalidIncidentOwnerException.class)
+    public ProblemDetail handleInvalidIncidentOwner(
+        InvalidIncidentOwnerException exception
+    ) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.BAD_REQUEST,
             exception.getMessage()
         );
     }

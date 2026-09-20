@@ -1,5 +1,6 @@
 import { ApiRequestError, authenticatedFetch } from './client'
-export type Incident = { id:string; title:string; description:string; severity:string; status:string; createdAt:string }
+export type Incident = { id:string; title:string; description:string; severity:string; status:string; serviceId?:string | null; ownerId?:string | null; ownerName?:string | null; createdAt:string }
+export type AssignableUser = { id:string; name:string; role:'MANAGER' | 'ENGINEER'; email:string; teamId:string; teamName:string }
 export type IncidentComment = { id:string; authorName:string; content:string }
 export type IncidentAlert = { id:string; severity:string; status:string; message:string }
 export type IncidentTask = { id:string; status:string; title:string }
@@ -29,6 +30,15 @@ export async function addComment(incidentId: string, content: string) {
 export async function updateIncidentStatus(id: string, action: 'acknowledge' | 'resolve') {
   const response = await authenticatedFetch(`http://localhost:8080/api/incidents/${id}/${action}`, { method: 'PATCH' })
   if (!response.ok) throw new Error('Unable to update incident status.')
+}
+export async function getAssignableUsers() {
+  const response = await authenticatedFetch('http://localhost:8080/api/users/assignable')
+  if (!response.ok) throw new Error('Unable to load people who can own incidents.')
+  return response.json() as Promise<AssignableUser[]>
+}
+export async function assignIncidentOwner(incidentId: string, userId: string) {
+  const response = await authenticatedFetch(`http://localhost:8080/api/incidents/${incidentId}/owner/${userId}`, { method: 'PATCH' })
+  if (!response.ok) throw new Error('Unable to assign the incident owner.')
 }
 export async function updateTaskStatus(id: string, action: 'start' | 'complete') {
   const response = await authenticatedFetch(`http://localhost:8080/api/tasks/${id}/${action}`, { method: 'PATCH' })

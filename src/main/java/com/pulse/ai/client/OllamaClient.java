@@ -3,6 +3,7 @@ package com.pulse.ai.client;
 import com.pulse.ai.exception.AiServiceUnavailableException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -17,7 +18,10 @@ public class OllamaClient {
         @Value("${pulse.ai.ollama.base-url}") String baseUrl,
         @Value("${pulse.ai.ollama.model}") String model
     ) {
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+        this.restClient = RestClient.builder()
+            .baseUrl(baseUrl)
+            .requestFactory(new SimpleClientHttpRequestFactory())
+            .build();
         this.model = model;
     }
 

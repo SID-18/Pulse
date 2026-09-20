@@ -80,4 +80,12 @@ public class IncidentController {
     ) {
         return incidentService.assignService(incidentId, serviceId);
     }
+
+    @PatchMapping("/{incidentId}/owner/{userId}")
+    public IncidentResponse assignOwner(
+        @PathVariable UUID incidentId,
+        @PathVariable UUID userId
+    ) {
+        return incidentService.assignOwner(incidentId, userId);
+    }
 }

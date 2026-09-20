@@ -7,12 +7,17 @@ import com.pulse.incident.dto.PagedResponse;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.entity.IncidentStatus;
 import com.pulse.incident.exception.IncidentNotFoundException;
+import com.pulse.incident.exception.InvalidIncidentOwnerException;
 import com.pulse.incident.repository.IncidentRepository;
 import com.pulse.event.entity.IncidentEventType;
 import com.pulse.event.service.IncidentEventService;
 import com.pulse.service.entity.MonitoredService;
 import com.pulse.service.exception.MonitoredServiceNotFoundException;
 import com.pulse.service.repository.MonitoredServiceRepository;
+import com.pulse.user.entity.User;
+import com.pulse.user.entity.UserRole;
+import com.pulse.user.exception.UserNotFoundException;
+import com.pulse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -30,6 +35,7 @@ public class IncidentService {
 
     private final IncidentRepository incidentRepository;
     private final MonitoredServiceRepository monitoredServiceRepository;
+    private final UserRepository userRepository;
     private final IncidentEventService incidentEventService;
 
     @Transactional
@@ -133,6 +139,28 @@ public class IncidentService {
         return toResponse(incident);
     }
 
+    @Transactional
+    @CacheEvict(cacheNames = "incidentPages", allEntries = true)
+    public IncidentResponse assignOwner(UUID incidentId, UUID userId) {
+        Incident incident = findIncidentById(incidentId);
+        User owner = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (owner.getRole() != UserRole.MANAGER
+            && owner.getRole() != UserRole.ENGINEER) {
+            throw new InvalidIncidentOwnerException(owner.getRole());
+        }
+
+        incident.assignOwner(owner);
+        incidentEventService.record(
+            incident,
+            IncidentEventType.INCIDENT_OWNER_ASSIGNED,
+            "Incident owner assigned: " + owner.getName() + "."
+        );
+
+        return toResponse(incident);
+    }
+
     private Incident findIncidentById(UUID id) {
         return incidentRepository.findById(id)
             .orElseThrow(() -> new IncidentNotFoundException(id));
@@ -140,6 +168,7 @@ public class IncidentService {
 
     private IncidentResponse toResponse(Incident incident) {
         MonitoredService assignedService = incident.getService();
+        User owner = incident.getOwner();
 
         return new IncidentResponse(
             incident.getId(),
@@ -148,6 +177,8 @@ public class IncidentService {
             incident.getSeverity(),
             incident.getStatus(),
             assignedService == null ? null : assignedService.getId(),
+            owner == null ? null : owner.getId(),
+            owner == null ? null : owner.getName(),
             incident.getCreatedAt(),
             incident.getResolvedAt()
         );

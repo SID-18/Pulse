@@ -8,10 +8,13 @@ import {
 } from '../api/ai'
 import {
   addComment,
+  assignIncidentOwner,
+  getAssignableUsers,
   getIncidentData,
   updateIncidentStatus,
   updateTaskStatus,
   type IncidentData,
+  type AssignableUser,
 } from '../api/incidents'
 import { ApiRequestError } from '../api/client'
 import { getRole } from '../auth/session'
@@ -27,6 +30,10 @@ export function IncidentDetailPage() {
   const [aiError, setAiError] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [ragLoading, setRagLoading] = useState(false)
+  const [assignableUsers, setAssignableUsers] = useState<AssignableUser[]>([])
+  const [selectedOwnerId, setSelectedOwnerId] = useState('')
+  const [ownerFeedback, setOwnerFeedback] = useState('')
+  const [ownerUpdating, setOwnerUpdating] = useState(false)
   const manager = ['MANAGER', 'ADMIN'].includes(getRole() ?? '')
 
   const load = useCallback(() => {
@@ -42,6 +49,10 @@ export function IncidentDetailPage() {
   }, [id])
 
   useEffect(() => { load() }, [load])
+  useEffect(() => {
+    if (!manager) return
+    getAssignableUsers().then(setAssignableUsers).catch(() => setAssignableUsers([]))
+  }, [manager])
   useEffect(
     () => subscribeToIncidentEvents(event => {
       if (event.incidentId === id) load()
@@ -64,6 +75,22 @@ export function IncidentDetailPage() {
   async function changeTask(taskId: string, action: 'start' | 'complete') {
     await updateTaskStatus(taskId, action)
     load()
+  }
+
+  async function changeOwner() {
+    if (!selectedOwnerId) return
+    setOwnerUpdating(true)
+    setOwnerFeedback('')
+    try {
+      await assignIncidentOwner(id, selectedOwnerId)
+      setSelectedOwnerId('')
+      setOwnerFeedback('Incident owner updated.')
+      load()
+    } catch {
+      setOwnerFeedback('Unable to update the incident owner. Please try again.')
+    } finally {
+      setOwnerUpdating(false)
+    }
   }
 
   async function generateAiSummary() {
@@ -133,6 +160,33 @@ export function IncidentDetailPage() {
         </div>
       </section>
       <aside>
+        <section className="summary-card ownership-card">
+          <h2>Incident ownership</h2>
+          <p><strong>Current owner</strong><br />{data.incident.ownerName ?? 'Unassigned'}</p>
+          {manager && <label>
+            Assign or reassign owner
+            <select
+              value={selectedOwnerId || data.incident.ownerId || ''}
+              onChange={event => {
+                setSelectedOwnerId(event.target.value)
+                setOwnerFeedback('')
+              }}
+            >
+              <option value="" disabled>Select a manager or engineer</option>
+              {assignableUsers.map(user => <option key={user.id} value={user.id}>
+                {user.name} · {user.role}
+              </option>)}
+            </select>
+            <button
+              type="button"
+              disabled={!selectedOwnerId || selectedOwnerId === data.incident.ownerId || ownerUpdating}
+              onClick={() => { void changeOwner() }}
+            >
+              {ownerUpdating ? 'Assigning…' : 'Assign owner'}
+            </button>
+            {ownerFeedback && <small className="owner-feedback">{ownerFeedback}</small>}
+          </label>}
+        </section>
         <section className="summary-card">
           <h2>Local AI assistant</h2>
           <p>Generate a local summary and suggested next steps from this incident’s current data.</p>

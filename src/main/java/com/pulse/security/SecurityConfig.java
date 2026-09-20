@@ -87,6 +87,8 @@ public class SecurityConfig {
                     .permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/ws").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/assignable")
+                    .hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/**")
                     .hasAnyRole("ADMIN", "MANAGER", "ENGINEER", "VIEWER")
                 .requestMatchers("/api/users/**").hasRole("ADMIN")

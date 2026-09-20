@@ -34,4 +34,9 @@ public class UserController {
     public List<UserResponse> getUsers() {
         return userService.getUsers();
     }
+
+    @GetMapping("/assignable")
+    public List<UserResponse> getAssignableUsers() {
+        return userService.getAssignableUsers();
+    }
 }

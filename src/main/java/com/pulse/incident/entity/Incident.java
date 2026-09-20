@@ -14,6 +14,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import com.pulse.incident.exception.InvalidIncidentStatusTransitionException;
 import com.pulse.service.entity.MonitoredService;
+import com.pulse.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,6 +56,10 @@ public class Incident {
     @JoinColumn(name = "service_id")
     private MonitoredService service;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_user_id")
+    private User owner;
+
     public Incident(String title, String description, IncidentSeverity severity) {
         this.title = title;
         this.description = description;
@@ -92,5 +97,9 @@ public class Incident {
 
     public void assignService(MonitoredService service) {
         this.service = service;
+    }
+
+    public void assignOwner(User owner) {
+        this.owner = owner;
     }
 }

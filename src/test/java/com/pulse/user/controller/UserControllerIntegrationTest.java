@@ -125,6 +125,20 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    void shouldListOnlyAssignableUsers() throws Exception {
+        Team team = teamRepository.save(new Team("Payments"));
+        userRepository.save(new User("Viewer User", "viewer@example.com", UserRole.VIEWER, team));
+        userRepository.save(new User("Maya Manager", "manager@example.com", UserRole.MANAGER, team));
+        userRepository.save(new User("Aarav Engineer", "engineer@example.com", UserRole.ENGINEER, team));
+
+        mockMvc.perform(get("/api/users/assignable"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].name").value("Aarav Engineer"))
+            .andExpect(jsonPath("$[1].name").value("Maya Manager"));
+    }
+
+    @Test
     void shouldReturnConflictForDuplicateUserEmail() throws Exception {
         Team team = teamRepository.save(new Team("Payments"));
         String requestBody = """

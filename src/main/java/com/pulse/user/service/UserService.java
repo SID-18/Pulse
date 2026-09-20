@@ -6,6 +6,7 @@ import com.pulse.team.repository.TeamRepository;
 import com.pulse.user.dto.CreateUserRequest;
 import com.pulse.user.dto.UserResponse;
 import com.pulse.user.entity.User;
+import com.pulse.user.entity.UserRole;
 import com.pulse.user.exception.UserEmailAlreadyExistsException;
 import com.pulse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,16 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserResponse> getUsers() {
         return userRepository.findAll(Sort.by(Sort.Direction.ASC, "name"))
+            .stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> getAssignableUsers() {
+        return userRepository.findByRoleInOrderByNameAsc(
+                List.of(UserRole.MANAGER, UserRole.ENGINEER)
+            )
             .stream()
             .map(this::toResponse)
             .toList();
