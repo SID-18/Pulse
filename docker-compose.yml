@@ -64,14 +64,13 @@ services:
       PULSE_JWT_SECRET: ${PULSE_JWT_SECRET}
       PULSE_METRICS_USERNAME: ${PULSE_METRICS_USERNAME:-pulse-metrics}
       PULSE_METRICS_PASSWORD: ${PULSE_METRICS_PASSWORD:-PulseMetricsDevOnly!2026}
-      PULSE_OLLAMA_BASE_URL: http://host.docker.internal:11434
+      PULSE_OLLAMA_BASE_URL: http://ollama:11434
       PULSE_OLLAMA_MODEL: ${PULSE_OLLAMA_MODEL}
+      PULSE_RAG_BASE_URL: http://ai-service:8002
       PULSE_BOOTSTRAP_ADMIN_NAME: ${PULSE_BOOTSTRAP_ADMIN_NAME:-Pulse Docker Admin}
       PULSE_BOOTSTRAP_ADMIN_EMAIL: ${PULSE_BOOTSTRAP_ADMIN_EMAIL:-admin@pulse.local}
       PULSE_BOOTSTRAP_ADMIN_PASSWORD: ${PULSE_BOOTSTRAP_ADMIN_PASSWORD:-PulseDockerPass!2026}
       PULSE_BOOTSTRAP_ADMIN_TEAM_NAME: ${PULSE_BOOTSTRAP_ADMIN_TEAM_NAME:-Platform Operations}
-    extra_hosts:
-      - host.docker.internal:host-gateway
     ports:
       - "8080:8080"
     restart: on-failure
@@ -84,6 +83,43 @@ services:
         condition: service_started
       otel-collector:
         condition: service_started
+      ai-service:
+        condition: service_started
+      ollama:
+        condition: service_started
+
+  chroma:
+    image: chromadb/chroma:latest
+    volumes:
+      - chroma-data:/data
+    restart: on-failure
+
+  ollama:
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_CONTEXT_LENGTH: 4096
+      OLLAMA_MAX_LOADED_MODELS: 1
+      OLLAMA_NUM_PARALLEL: 1
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: on-failure
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    environment:
+      PULSE_CHROMA_HOST: chroma
+      PULSE_CHROMA_PORT: 8000
+      PULSE_OLLAMA_BASE_URL: http://ollama:11434
+      PULSE_OLLAMA_MODEL: ${PULSE_OLLAMA_MODEL}
+      PULSE_OLLAMA_EMBEDDING_MODEL: ${PULSE_OLLAMA_EMBEDDING_MODEL:-embeddinggemma}
+    expose:
+      - "8002"
+    restart: on-failure
+    depends_on:
+      - chroma
+      - ollama
 
   tempo:
     image: grafana/tempo:2.7.2
@@ -182,3 +218,5 @@ volumes:
   grafana-data:
   alertmanager-data:
   tempo-data:
+  chroma-data:
+  ollama-data:

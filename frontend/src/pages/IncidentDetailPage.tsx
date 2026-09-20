@@ -1,6 +1,11 @@
 import { Link, useParams } from 'react-router'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { getAiSummary, type IncidentAiSummary } from '../api/ai'
+import {
+  getAiSummary,
+  getRagRecommendation,
+  type IncidentAiSummary,
+  type IncidentRagRecommendation,
+} from '../api/ai'
 import {
   addComment,
   getIncidentData,
@@ -18,8 +23,10 @@ export function IncidentDetailPage() {
   const [error, setError] = useState('')
   const [comment, setComment] = useState('')
   const [aiSummary, setAiSummary] = useState<IncidentAiSummary>()
+  const [ragRecommendation, setRagRecommendation] = useState<IncidentRagRecommendation>()
   const [aiError, setAiError] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+  const [ragLoading, setRagLoading] = useState(false)
   const manager = ['MANAGER', 'ADMIN'].includes(getRole() ?? '')
 
   const load = useCallback(() => {
@@ -68,6 +75,18 @@ export function IncidentDetailPage() {
       setAiError(reason instanceof Error ? reason.message : 'Local AI summary is unavailable.')
     } finally {
       setAiLoading(false)
+    }
+  }
+
+  async function generateRagRecommendation() {
+    setRagLoading(true)
+    setAiError('')
+    try {
+      setRagRecommendation(await getRagRecommendation(id))
+    } catch (reason) {
+      setAiError(reason instanceof Error ? reason.message : 'Local RAG recommendation is unavailable.')
+    } finally {
+      setRagLoading(false)
     }
   }
 
@@ -120,10 +139,24 @@ export function IncidentDetailPage() {
           <button disabled={aiLoading} onClick={generateAiSummary}>
             {aiLoading ? 'Generating…' : 'Generate AI summary'}
           </button>
+          <button className="secondary-action" disabled={ragLoading} onClick={generateRagRecommendation}>
+            {ragLoading ? 'Searching history…' : 'Find similar resolved incidents'}
+          </button>
           {aiError && <p>{aiError}</p>}
           {aiSummary && <div className="ai-summary">
             <small>Generated locally by {aiSummary.model}</small>
             <p>{aiSummary.summary}</p>
+          </div>}
+          {ragRecommendation && <div className="ai-summary rag-recommendation">
+            <small>Grounded locally by {ragRecommendation.model}</small>
+            <h3>Similar resolved incidents</h3>
+            {ragRecommendation.similar_incidents.length ? <ul>
+              {ragRecommendation.similar_incidents.map(item => <li key={item.id}>
+                <strong>{item.title}</strong> · {item.severity} · {Math.round(item.similarity * 100)}% similar
+              </li>)}
+            </ul> : <p>No resolved incidents have been indexed yet.</p>}
+            <h3>Recommendation</h3>
+            <p>{ragRecommendation.recommendation}</p>
           </div>}
         </section>
         <section className="summary-card">

@@ -3,6 +3,7 @@ package com.pulse.common.exception;
 import com.pulse.alert.exception.AlertNotFoundException;
 import com.pulse.alert.exception.InvalidAlertStatusTransitionException;
 import com.pulse.ai.exception.AiServiceUnavailableException;
+import com.pulse.ai.exception.RagServiceUnavailableException;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.exception.InvalidIncidentStatusTransitionException;
 import com.pulse.service.exception.MonitoredServiceNameAlreadyExistsException;
@@ -32,6 +33,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AiServiceUnavailableException.class)
     public ProblemDetail handleAiServiceUnavailable(
         AiServiceUnavailableException exception
+    ) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(RagServiceUnavailableException.class)
+    public ProblemDetail handleRagServiceUnavailable(
+        RagServiceUnavailableException exception
     ) {
         return ProblemDetail.forStatusAndDetail(
             HttpStatus.SERVICE_UNAVAILABLE,

@@ -85,7 +85,12 @@ Prerequisites:
 
 - Docker Desktop is running.
 - Ollama is running on Windows, with the configured model available (default:
-  `qwen2.5:3b`).
+  `qwen2.5:1.5b`).
+- Ollama has the local embedding model used by RAG:
+
+```powershell
+ollama pull embeddinggemma
+```
 
 Create your machine-local configuration once:
 
@@ -102,7 +107,31 @@ docker compose up --build
 
 Open `http://localhost:5173`. The frontend calls the backend through
 `http://localhost:8080`; the backend calls Ollama through
-`host.docker.internal:11434`.
+`host.docker.internal:11434`. Docker Compose also starts a local Python AI
+service and ChromaDB. ChromaDB persists vector data in the `chroma-data`
+Docker volume; it is never sent to a paid cloud service.
+
+## RAG recommendations
+
+Pulse keeps PostgreSQL as the source of truth. ChromaDB stores only searchable
+vector representations of resolved incidents. A manager first indexes that
+history with:
+
+```http
+POST /api/incidents/ai/reindex-resolved
+```
+
+Then any signed-in user can request a grounded recommendation for an incident:
+
+```http
+GET /api/incidents/{incidentId}/ai-recommendation
+```
+
+The Python AI service embeds the current incident through local Ollama, finds
+up to three similar resolved incidents in ChromaDB, and sends only that context
+to local Ollama for a recommendation. If no resolved incidents have been
+indexed, the endpoint still returns a recommendation but clearly reports that
+there is no retrieved history.
 
 The Compose database begins empty except for the Flyway schema. This is
 intentional. The Docker-only profile creates one manager from the bootstrap
