@@ -17,6 +17,8 @@ public record IncidentResponse(
     UUID ownerId,
     String ownerName,
     Instant createdAt,
-    Instant resolvedAt
+    Instant acknowledgedAt,
+    Instant resolvedAt,
+    IncidentSlaResponse sla
 ) implements Serializable {
 }

@@ -34,6 +34,7 @@ export function IncidentDetailPage() {
   const [selectedOwnerId, setSelectedOwnerId] = useState('')
   const [ownerFeedback, setOwnerFeedback] = useState('')
   const [ownerUpdating, setOwnerUpdating] = useState(false)
+  const [currentTime, setCurrentTime] = useState(() => Date.now())
   const manager = ['MANAGER', 'ADMIN'].includes(getRole() ?? '')
 
   const load = useCallback(() => {
@@ -49,6 +50,10 @@ export function IncidentDetailPage() {
   }, [id])
 
   useEffect(() => { load() }, [load])
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(Date.now()), 60_000)
+    return () => window.clearInterval(timer)
+  }, [])
   useEffect(() => {
     if (!manager) return
     getAssignableUsers().then(setAssignableUsers).catch(() => setAssignableUsers([]))
@@ -103,6 +108,13 @@ export function IncidentDetailPage() {
     } finally {
       setAiLoading(false)
     }
+  }
+
+  function timeUntil(dueAt: string) {
+    const minutes = Math.round((new Date(dueAt).getTime() - currentTime) / 60_000)
+    if (minutes < 0) return `Overdue by ${Math.abs(minutes)} min`
+    if (minutes < 60) return `Due in ${minutes} min`
+    return `Due in ${Math.ceil(minutes / 60)} hr`
   }
 
   async function generateRagRecommendation() {
@@ -160,6 +172,25 @@ export function IncidentDetailPage() {
         </div>
       </section>
       <aside>
+        <section className="summary-card sla-card">
+          <h2>SLA targets</h2>
+          <p>
+            <strong>Acknowledgement</strong><br />
+            <span className={`sla-status ${data.incident.sla.acknowledgementStatus.toLowerCase()}`}>
+              {data.incident.sla.acknowledgementStatus.replaceAll('_', ' ')}
+            </span><br />
+            Due {new Date(data.incident.sla.acknowledgementDueAt).toLocaleString()}<br />
+            <small>{timeUntil(data.incident.sla.acknowledgementDueAt)}</small>
+          </p>
+          <p>
+            <strong>Resolution</strong><br />
+            <span className={`sla-status ${data.incident.sla.resolutionStatus.toLowerCase()}`}>
+              {data.incident.sla.resolutionStatus.replaceAll('_', ' ')}
+            </span><br />
+            Due {new Date(data.incident.sla.resolutionDueAt).toLocaleString()}<br />
+            <small>{timeUntil(data.incident.sla.resolutionDueAt)}</small>
+          </p>
+        </section>
         <section className="summary-card ownership-card">
           <h2>Incident ownership</h2>
           <p><strong>Current owner</strong><br />{data.incident.ownerName ?? 'Unassigned'}</p>

@@ -23,6 +23,7 @@ class IncidentTest {
         incident.acknowledge();
 
         assertEquals(IncidentStatus.ACKNOWLEDGED, incident.getStatus());
+        assertNotNull(incident.getAcknowledgedAt());
     }
 
     @Test

@@ -1,0 +1,1 @@
+ALTER TABLE incidents ADD COLUMN acknowledged_at TIMESTAMP WITH TIME ZONE;

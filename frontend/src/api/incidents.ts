@@ -1,5 +1,6 @@
 import { ApiRequestError, authenticatedFetch } from './client'
-export type Incident = { id:string; title:string; description:string; severity:string; status:string; serviceId?:string | null; ownerId?:string | null; ownerName?:string | null; createdAt:string }
+export type IncidentSla = { acknowledgementDueAt:string; resolutionDueAt:string; acknowledgementStatus:'ON_TRACK' | 'BREACHED' | 'NOT_RECORDED'; resolutionStatus:'ON_TRACK' | 'BREACHED' }
+export type Incident = { id:string; title:string; description:string; severity:string; status:string; serviceId?:string | null; ownerId?:string | null; ownerName?:string | null; createdAt:string; acknowledgedAt?:string | null; resolvedAt?:string | null; sla:IncidentSla }
 export type AssignableUser = { id:string; name:string; role:'MANAGER' | 'ENGINEER'; email:string; teamId:string; teamName:string }
 export type IncidentComment = { id:string; authorName:string; content:string }
 export type IncidentAlert = { id:string; severity:string; status:string; message:string }

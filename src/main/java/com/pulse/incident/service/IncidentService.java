@@ -37,6 +37,7 @@ public class IncidentService {
     private final MonitoredServiceRepository monitoredServiceRepository;
     private final UserRepository userRepository;
     private final IncidentEventService incidentEventService;
+    private final IncidentSlaPolicy incidentSlaPolicy;
 
     @Transactional
     @CacheEvict(cacheNames = "incidentPages", allEntries = true)
@@ -180,7 +181,9 @@ public class IncidentService {
             owner == null ? null : owner.getId(),
             owner == null ? null : owner.getName(),
             incident.getCreatedAt(),
-            incident.getResolvedAt()
+            incident.getAcknowledgedAt(),
+            incident.getResolvedAt(),
+            incidentSlaPolicy.evaluate(incident)
         );
     }
 }

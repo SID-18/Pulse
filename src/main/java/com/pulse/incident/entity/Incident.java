@@ -52,6 +52,9 @@ public class Incident {
     @Column(name = "resolved_at")
     private Instant resolvedAt;
 
+    @Column(name = "acknowledged_at")
+    private Instant acknowledgedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id")
     private MonitoredService service;
@@ -81,6 +84,7 @@ public class Incident {
         }
 
         status = IncidentStatus.ACKNOWLEDGED;
+        acknowledgedAt = Instant.now();
     }
 
     public void resolve() {

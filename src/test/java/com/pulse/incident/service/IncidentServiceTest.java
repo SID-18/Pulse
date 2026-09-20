@@ -49,6 +49,9 @@ class IncidentServiceTest {
     @Mock
     private IncidentEventService incidentEventService;
 
+    @Mock
+    private IncidentSlaPolicy incidentSlaPolicy;
+
     @InjectMocks
     private IncidentService incidentService;
 
