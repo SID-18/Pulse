@@ -5,6 +5,7 @@ import com.pulse.alert.exception.InvalidAlertStatusTransitionException;
 import com.pulse.ai.exception.AiServiceUnavailableException;
 import com.pulse.ai.exception.RagServiceUnavailableException;
 import com.pulse.notification.exception.NotificationServiceUnavailableException;
+import com.pulse.oncall.exception.InvalidOnCallAssignmentException;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.exception.InvalidIncidentStatusTransitionException;
 import com.pulse.incident.exception.InvalidIncidentOwnerException;
@@ -184,6 +185,11 @@ public class GlobalExceptionHandler {
             HttpStatus.BAD_REQUEST,
             exception.getMessage()
         );
+    }
+
+    @ExceptionHandler(InvalidOnCallAssignmentException.class)
+    public ProblemDetail handleInvalidOnCallAssignment(InvalidOnCallAssignmentException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(MonitoredServiceNameAlreadyExistsException.class)

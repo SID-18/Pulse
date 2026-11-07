@@ -94,7 +94,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PATCH, "/api/notifications/**")
                     .hasAnyRole("ADMIN", "MANAGER", "ENGINEER", "VIEWER")
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
-                .requestMatchers("/api/teams/**", "/api/services/**", "/api/alerts/**")
+                .requestMatchers("/api/teams/**", "/api/services/**", "/api/alerts/**", "/api/on-call/**")
                     .hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/api/monitoring/**")
                     .hasAnyRole("ADMIN", "MANAGER")

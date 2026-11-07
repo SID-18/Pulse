@@ -10,6 +10,8 @@ import com.pulse.incident.entity.IncidentStatus;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.exception.InvalidIncidentOwnerException;
 import com.pulse.incident.repository.IncidentRepository;
+import com.pulse.oncall.entity.OnCallAssignment;
+import com.pulse.oncall.repository.OnCallAssignmentRepository;
 import com.pulse.service.entity.MonitoredService;
 import com.pulse.service.exception.MonitoredServiceNotFoundException;
 import com.pulse.service.repository.MonitoredServiceRepository;
@@ -25,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,6 +48,9 @@ class IncidentServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private OnCallAssignmentRepository onCallAssignmentRepository;
 
     @Mock
     private IncidentEventService incidentEventService;
@@ -139,6 +145,38 @@ class IncidentServiceTest {
             eq(incident),
             eq(IncidentEventType.SERVICE_ASSIGNED),
             eq("Service assigned: Payment API.")
+        );
+    }
+
+    @Test
+    void shouldAutomaticallyAssignTheActiveOnCallUserForTheServiceTeam() {
+        UUID incidentId = UUID.randomUUID();
+        UUID serviceId = UUID.randomUUID();
+        Team team = new Team("Payments");
+        ReflectionTestUtils.setField(team, "id", UUID.randomUUID());
+        User onCallUser = new User("Aarav Sharma", "aarav@example.com", UserRole.ENGINEER, team);
+        ReflectionTestUtils.setField(onCallUser, "id", UUID.randomUUID());
+        MonitoredService service = new MonitoredService("Payment API", "Handles payments.");
+        service.assignTeam(team);
+        Incident incident = new Incident("Payment API failure", "Checkout fails.", IncidentSeverity.CRITICAL);
+        OnCallAssignment assignment = new OnCallAssignment(
+            team, onCallUser, Instant.now().minusSeconds(60), Instant.now().plusSeconds(3600)
+        );
+
+        when(incidentRepository.findById(incidentId)).thenReturn(Optional.of(incident));
+        when(monitoredServiceRepository.findById(serviceId)).thenReturn(Optional.of(service));
+        when(onCallAssignmentRepository
+            .findFirstByTeamIdAndStartsAtLessThanEqualAndEndsAtGreaterThanOrderByStartsAtDesc(
+                eq(team.getId()), any(Instant.class), any(Instant.class)))
+            .thenReturn(Optional.of(assignment));
+
+        IncidentResponse response = incidentService.assignService(incidentId, serviceId);
+
+        assertEquals(onCallUser.getId(), response.ownerId());
+        assertEquals(onCallUser, incident.getOwner());
+        verify(incidentEventService).record(
+            eq(incident), eq(IncidentEventType.INCIDENT_AUTO_ASSIGNED),
+            eq("Incident automatically assigned to on-call user: Aarav Sharma.")
         );
     }
 

@@ -9,6 +9,7 @@ import com.pulse.incident.entity.IncidentStatus;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.exception.InvalidIncidentOwnerException;
 import com.pulse.incident.repository.IncidentRepository;
+import com.pulse.oncall.repository.OnCallAssignmentRepository;
 import com.pulse.event.entity.IncidentEventType;
 import com.pulse.event.service.IncidentEventService;
 import com.pulse.service.entity.MonitoredService;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class IncidentService {
     private final IncidentRepository incidentRepository;
     private final MonitoredServiceRepository monitoredServiceRepository;
     private final UserRepository userRepository;
+    private final OnCallAssignmentRepository onCallAssignmentRepository;
     private final IncidentEventService incidentEventService;
     private final IncidentSlaPolicy incidentSlaPolicy;
 
@@ -136,6 +139,7 @@ public class IncidentService {
             IncidentEventType.SERVICE_ASSIGNED,
             "Service assigned: " + service.getName() + "."
         );
+        assignActiveOnCallOwner(incident, service);
 
         return toResponse(incident);
     }
@@ -165,6 +169,26 @@ public class IncidentService {
     private Incident findIncidentById(UUID id) {
         return incidentRepository.findById(id)
             .orElseThrow(() -> new IncidentNotFoundException(id));
+    }
+
+    private void assignActiveOnCallOwner(Incident incident, MonitoredService service) {
+        if (service.getTeam() == null) {
+            return;
+        }
+
+        onCallAssignmentRepository
+            .findFirstByTeamIdAndStartsAtLessThanEqualAndEndsAtGreaterThanOrderByStartsAtDesc(
+                service.getTeam().getId(), Instant.now(), Instant.now()
+            )
+            .ifPresent(assignment -> {
+                User owner = assignment.getUser();
+                incident.assignOwner(owner);
+                incidentEventService.record(
+                    incident,
+                    IncidentEventType.INCIDENT_AUTO_ASSIGNED,
+                    "Incident automatically assigned to on-call user: " + owner.getName() + "."
+                );
+            });
     }
 
     private IncidentResponse toResponse(Incident incident) {
