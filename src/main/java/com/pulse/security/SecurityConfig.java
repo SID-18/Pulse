@@ -91,6 +91,8 @@ public class SecurityConfig {
                     .hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/api/**")
                     .hasAnyRole("ADMIN", "MANAGER", "ENGINEER", "VIEWER")
+                .requestMatchers(HttpMethod.PATCH, "/api/notifications/**")
+                    .hasAnyRole("ADMIN", "MANAGER", "ENGINEER", "VIEWER")
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
                 .requestMatchers("/api/teams/**", "/api/services/**", "/api/alerts/**")
                     .hasAnyRole("ADMIN", "MANAGER")

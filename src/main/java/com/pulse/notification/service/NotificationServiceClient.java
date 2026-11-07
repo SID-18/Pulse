@@ -5,7 +5,7 @@ import com.pulse.notification.exception.NotificationServiceUnavailableException;
 import com.pulse.user.dto.UserResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -23,7 +23,7 @@ public class NotificationServiceClient {
     ) {
         this.restClient = RestClient.builder()
             .baseUrl(baseUrl)
-            .requestFactory(new SimpleClientHttpRequestFactory())
+            .requestFactory(new HttpComponentsClientHttpRequestFactory())
             .build();
     }
 

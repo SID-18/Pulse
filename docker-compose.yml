@@ -194,6 +194,7 @@ services:
       dockerfile: notification-service/Dockerfile
     environment:
       PULSE_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PULSE_REDIS_HOST: redis
       PULSE_OTEL_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "8081:8081"
@@ -201,6 +202,8 @@ services:
     depends_on:
       kafka:
         condition: service_started
+      redis:
+        condition: service_healthy
       otel-collector:
         condition: service_started
 
