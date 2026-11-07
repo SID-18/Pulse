@@ -23,6 +23,8 @@ class KafkaIncidentEventConsumerTest {
         IncidentKafkaEvent event = new IncidentKafkaEvent(
             UUID.randomUUID(),
             UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
             IncidentEventType.INCIDENT_ACKNOWLEDGED,
             "Incident acknowledged.",
             Instant.parse("2026-08-30T12:00:00Z")

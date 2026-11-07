@@ -8,6 +8,8 @@ import java.util.UUID;
 public record IncidentKafkaEvent(
     UUID eventId,
     UUID incidentId,
+    UUID recipientUserId,
+    UUID recipientTeamId,
     IncidentEventType type,
     String message,
     Instant occurredAt

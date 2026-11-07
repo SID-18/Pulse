@@ -54,6 +54,8 @@ public class OutboxEventPublisher {
                 new IncidentKafkaEvent(
                     event.getId(),
                     event.getIncidentId(),
+                    event.getRecipientUserId(),
+                    event.getRecipientTeamId(),
                     event.getEventType(),
                     event.getMessage(),
                     event.getOccurredAt()

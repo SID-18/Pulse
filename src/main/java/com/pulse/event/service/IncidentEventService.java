@@ -9,6 +9,7 @@ import com.pulse.event.repository.IncidentEventRepository;
 import com.pulse.incident.entity.Incident;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.repository.IncidentRepository;
+import com.pulse.user.entity.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,10 +46,13 @@ public class IncidentEventService {
         IncidentEvent event = incidentEventRepository.save(
             new IncidentEvent(incident, type, message)
         );
+        User owner = incident.getOwner();
 
         outboxEventRepository.save(new OutboxEvent(
             event.getId(),
             incident.getId(),
+            owner == null ? null : owner.getId(),
+            owner == null ? null : owner.getTeam().getId(),
             incidentEventsTopic,
             event.getType(),
             event.getMessage(),

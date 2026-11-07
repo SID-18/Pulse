@@ -5,7 +5,6 @@ import com.pulse.notification.kafka.NotificationEvent;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -29,6 +28,8 @@ public class NotificationStore {
         notifications.addFirst(new NotificationResponse(
             event.eventId(),
             event.incidentId(),
+            event.recipientUserId(),
+            event.recipientTeamId(),
             event.type(),
             event.message(),
             event.occurredAt(),
@@ -43,7 +44,11 @@ public class NotificationStore {
         return true;
     }
 
-    public List<NotificationResponse> getLatest() {
-        return new ArrayList<>(notifications);
+    public List<NotificationResponse> getLatest(UUID recipientUserId, UUID recipientTeamId) {
+        return notifications.stream()
+            .filter(notification -> (recipientUserId == null && recipientTeamId == null)
+                || recipientUserId != null && recipientUserId.equals(notification.recipientUserId())
+                || recipientTeamId != null && recipientTeamId.equals(notification.recipientTeamId()))
+            .toList();
     }
 }

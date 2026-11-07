@@ -79,6 +79,8 @@ class OutboxEventPublisherTest {
         return new OutboxEvent(
             UUID.randomUUID(),
             UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
             "incident-events",
             IncidentEventType.COMMENT_ADDED,
             "Comment added by Dev Engineer.",

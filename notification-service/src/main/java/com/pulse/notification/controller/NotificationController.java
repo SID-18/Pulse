@@ -3,10 +3,12 @@ package com.pulse.notification.controller;
 import com.pulse.notification.dto.NotificationResponse;
 import com.pulse.notification.service.NotificationStore;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -19,7 +21,10 @@ public class NotificationController {
     }
 
     @GetMapping
-    public List<NotificationResponse> getLatestNotifications() {
-        return notificationStore.getLatest();
+    public List<NotificationResponse> getLatestNotifications(
+        @RequestParam(required = false) UUID recipientUserId,
+        @RequestParam(required = false) UUID recipientTeamId
+    ) {
+        return notificationStore.getLatest(recipientUserId, recipientTeamId);
     }
 }

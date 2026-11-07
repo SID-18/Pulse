@@ -28,6 +28,12 @@ public class OutboxEvent {
     @Column(name = "incident_id", nullable = false)
     private UUID incidentId;
 
+    @Column(name = "recipient_user_id")
+    private UUID recipientUserId;
+
+    @Column(name = "recipient_team_id")
+    private UUID recipientTeamId;
+
     @Column(nullable = false, length = 100)
     private String topic;
 
@@ -63,6 +69,8 @@ public class OutboxEvent {
     public OutboxEvent(
         UUID id,
         UUID incidentId,
+        UUID recipientUserId,
+        UUID recipientTeamId,
         String topic,
         IncidentEventType eventType,
         String message,
@@ -70,6 +78,8 @@ public class OutboxEvent {
     ) {
         this.id = id;
         this.incidentId = incidentId;
+        this.recipientUserId = recipientUserId;
+        this.recipientTeamId = recipientTeamId;
         this.topic = topic;
         this.eventType = eventType;
         this.message = message;

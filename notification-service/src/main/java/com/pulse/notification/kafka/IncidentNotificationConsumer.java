@@ -26,8 +26,10 @@ public class IncidentNotificationConsumer {
             return;
         }
         log.info(
-            "Notification queued: incidentId={}, type={}, message={}",
+            "Notification queued: incidentId={}, recipientUserId={}, recipientTeamId={}, type={}, message={}",
             event.incidentId(),
+            event.recipientUserId(),
+            event.recipientTeamId(),
             event.type(),
             event.message()
         );
