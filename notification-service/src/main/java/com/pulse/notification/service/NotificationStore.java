@@ -19,6 +19,7 @@ public class NotificationStore {
     private final ConcurrentLinkedDeque<NotificationResponse> notifications =
         new ConcurrentLinkedDeque<>();
     private final Set<UUID> processedEventIds = ConcurrentHashMap.newKeySet();
+    private final ConcurrentHashMap<UUID, Set<UUID>> readByUsers = new ConcurrentHashMap<>();
 
     public boolean record(NotificationEvent event) {
         if (!processedEventIds.add(event.eventId())) {
@@ -33,12 +34,14 @@ public class NotificationStore {
             event.type(),
             event.message(),
             event.occurredAt(),
-            Instant.now()
+            Instant.now(),
+            false
         ));
         while (notifications.size() > MAX_NOTIFICATIONS) {
             NotificationResponse removed = notifications.pollLast();
             if (removed != null) {
                 processedEventIds.remove(removed.eventId());
+                readByUsers.remove(removed.eventId());
             }
         }
         return true;
@@ -49,6 +52,31 @@ public class NotificationStore {
             .filter(notification -> (recipientUserId == null && recipientTeamId == null)
                 || recipientUserId != null && recipientUserId.equals(notification.recipientUserId())
                 || recipientTeamId != null && recipientTeamId.equals(notification.recipientTeamId()))
+            .map(notification -> toResponse(notification, recipientUserId))
             .toList();
+    }
+
+    public boolean markAsRead(UUID eventId, UUID recipientUserId, UUID recipientTeamId) {
+        boolean visibleToRecipient = notifications.stream().anyMatch(notification ->
+            notification.eventId().equals(eventId)
+                && (recipientUserId.equals(notification.recipientUserId())
+                    || recipientTeamId != null && recipientTeamId.equals(notification.recipientTeamId()))
+        );
+        if (!visibleToRecipient) {
+            return false;
+        }
+        readByUsers.computeIfAbsent(eventId, ignored -> ConcurrentHashMap.newKeySet())
+            .add(recipientUserId);
+        return true;
+    }
+
+    private NotificationResponse toResponse(NotificationResponse notification, UUID recipientUserId) {
+        boolean read = recipientUserId != null
+            && readByUsers.getOrDefault(notification.eventId(), Set.of()).contains(recipientUserId);
+        return new NotificationResponse(
+            notification.eventId(), notification.incidentId(), notification.recipientUserId(),
+            notification.recipientTeamId(), notification.type(), notification.message(),
+            notification.occurredAt(), notification.receivedAt(), read
+        );
     }
 }

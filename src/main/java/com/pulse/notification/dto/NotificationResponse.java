@@ -11,6 +11,7 @@ public record NotificationResponse(
     String type,
     String message,
     Instant occurredAt,
-    Instant receivedAt
+    Instant receivedAt,
+    boolean read
 ) {
 }

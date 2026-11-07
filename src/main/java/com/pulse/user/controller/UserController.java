@@ -45,4 +45,5 @@ public class UserController {
     public UserResponse getCurrentUser(Authentication authentication) {
         return userService.getUserByEmail(authentication.getName());
     }
+
 }

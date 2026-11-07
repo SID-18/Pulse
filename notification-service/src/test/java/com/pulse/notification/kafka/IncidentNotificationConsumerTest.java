@@ -7,6 +7,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IncidentNotificationConsumerTest {
 
@@ -71,5 +73,23 @@ class IncidentNotificationConsumerTest {
 
         assertEquals(1, notificationStore.getLatest(ownerId, null).size());
         assertEquals(1, notificationStore.getLatest(null, teamId).size());
+    }
+
+    @Test
+    void shouldTrackReadStatePerRecipient() {
+        NotificationStore notificationStore = new NotificationStore();
+        UUID eventId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+        UUID teammateId = UUID.randomUUID();
+        UUID teamId = UUID.randomUUID();
+        new IncidentNotificationConsumer(notificationStore).consume(new NotificationEvent(
+            eventId, UUID.randomUUID(), ownerId, teamId,
+            "COMMENT_ADDED", "Comment added.", Instant.now()
+        ));
+
+        assertFalse(notificationStore.getLatest(ownerId, teamId).getFirst().read());
+        assertTrue(notificationStore.markAsRead(eventId, ownerId, teamId));
+        assertTrue(notificationStore.getLatest(ownerId, teamId).getFirst().read());
+        assertFalse(notificationStore.getLatest(teammateId, teamId).getFirst().read());
     }
 }

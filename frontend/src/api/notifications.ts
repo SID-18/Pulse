@@ -7,6 +7,14 @@ export type Notification = {
   message: string
   occurredAt: string
   receivedAt: string
+  read: boolean
+}
+
+export async function markNotificationAsRead(eventId: string) {
+  const response = await authenticatedFetch(`http://localhost:8080/api/notifications/${eventId}/read`, {
+    method: 'PATCH',
+  })
+  if (!response.ok) throw new Error('Unable to mark notification as read.')
 }
 
 export async function getMyNotifications() {
