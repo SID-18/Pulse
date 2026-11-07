@@ -67,6 +67,7 @@ services:
       PULSE_OLLAMA_BASE_URL: http://ollama:11434
       PULSE_OLLAMA_MODEL: ${PULSE_OLLAMA_MODEL}
       PULSE_RAG_BASE_URL: http://ai-service:8002
+      PULSE_NOTIFICATION_BASE_URL: http://notification-service:8081
       PULSE_BOOTSTRAP_ADMIN_NAME: ${PULSE_BOOTSTRAP_ADMIN_NAME:-Pulse Docker Admin}
       PULSE_BOOTSTRAP_ADMIN_EMAIL: ${PULSE_BOOTSTRAP_ADMIN_EMAIL:-admin@pulse.local}
       PULSE_BOOTSTRAP_ADMIN_PASSWORD: ${PULSE_BOOTSTRAP_ADMIN_PASSWORD:-PulseDockerPass!2026}
@@ -86,6 +87,8 @@ services:
       ai-service:
         condition: service_started
       ollama:
+        condition: service_started
+      notification-service:
         condition: service_started
 
   chroma:

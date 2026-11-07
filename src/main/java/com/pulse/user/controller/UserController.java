@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -38,5 +39,10 @@ public class UserController {
     @GetMapping("/assignable")
     public List<UserResponse> getAssignableUsers() {
         return userService.getAssignableUsers();
+    }
+
+    @GetMapping("/me")
+    public UserResponse getCurrentUser(Authentication authentication) {
+        return userService.getUserByEmail(authentication.getName());
     }
 }

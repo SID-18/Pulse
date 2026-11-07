@@ -4,6 +4,7 @@ import com.pulse.alert.exception.AlertNotFoundException;
 import com.pulse.alert.exception.InvalidAlertStatusTransitionException;
 import com.pulse.ai.exception.AiServiceUnavailableException;
 import com.pulse.ai.exception.RagServiceUnavailableException;
+import com.pulse.notification.exception.NotificationServiceUnavailableException;
 import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.exception.InvalidIncidentStatusTransitionException;
 import com.pulse.incident.exception.InvalidIncidentOwnerException;
@@ -44,6 +45,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RagServiceUnavailableException.class)
     public ProblemDetail handleRagServiceUnavailable(
         RagServiceUnavailableException exception
+    ) {
+        return ProblemDetail.forStatusAndDetail(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            exception.getMessage()
+        );
+    }
+
+    @ExceptionHandler(NotificationServiceUnavailableException.class)
+    public ProblemDetail handleNotificationServiceUnavailable(
+        NotificationServiceUnavailableException exception
     ) {
         return ProblemDetail.forStatusAndDetail(
             HttpStatus.SERVICE_UNAVAILABLE,

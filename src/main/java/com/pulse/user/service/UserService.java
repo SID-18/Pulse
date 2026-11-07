@@ -8,6 +8,7 @@ import com.pulse.user.dto.UserResponse;
 import com.pulse.user.entity.User;
 import com.pulse.user.entity.UserRole;
 import com.pulse.user.exception.UserEmailAlreadyExistsException;
+import com.pulse.user.exception.UserNotFoundException;
 import com.pulse.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -62,6 +63,13 @@ public class UserService {
             .stream()
             .map(this::toResponse)
             .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+            .map(this::toResponse)
+            .orElseThrow(() -> new UserNotFoundException(email));
     }
 
     private UserResponse toResponse(User user) {
