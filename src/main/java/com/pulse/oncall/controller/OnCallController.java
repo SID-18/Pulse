@@ -6,6 +6,7 @@ import com.pulse.oncall.service.OnCallService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +32,10 @@ public class OnCallController {
     }
 
     @GetMapping("/active")
-    public OnCallAssignmentResponse getActive(@RequestParam UUID teamId) {
-        return onCallService.getActiveAssignment(teamId, Instant.now());
+    public ResponseEntity<OnCallAssignmentResponse> getActive(@RequestParam UUID teamId) {
+        OnCallAssignmentResponse assignment = onCallService.getActiveAssignment(teamId, Instant.now());
+        return assignment == null
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(assignment);
     }
 }

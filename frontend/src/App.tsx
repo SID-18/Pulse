@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage'
 import { IncidentDetailPage } from './pages/IncidentDetailPage'
 import { MonitoringPage } from './pages/MonitoringPage'
 import { NotificationsPage } from './pages/NotificationsPage'
+import { OnCallPage } from './pages/OnCallPage'
 
 function SessionExpiryRedirect() {
   const navigate = useNavigate()
@@ -23,7 +24,7 @@ function SessionExpiryRedirect() {
 }
 
 function App() {
-  return <><SessionExpiryRedirect /><Routes><Route path="/login" element={<LoginPage />} /><Route path="/incidents" element={<ProtectedRoute><IncidentsPage /></ProtectedRoute>} /><Route path="/incidents/:id" element={<ProtectedRoute><IncidentDetailPage /></ProtectedRoute>} /><Route path="/monitoring" element={<ProtectedRoute><MonitoringPage /></ProtectedRoute>} /><Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} /><Route path="*" element={<Navigate to="/login" replace />} /></Routes></>
+  return <><SessionExpiryRedirect /><Routes><Route path="/login" element={<LoginPage />} /><Route path="/incidents" element={<ProtectedRoute><IncidentsPage /></ProtectedRoute>} /><Route path="/incidents/:id" element={<ProtectedRoute><IncidentDetailPage /></ProtectedRoute>} /><Route path="/monitoring" element={<ProtectedRoute><MonitoringPage /></ProtectedRoute>} /><Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} /><Route path="/on-call" element={<ProtectedRoute><OnCallPage /></ProtectedRoute>} /><Route path="*" element={<Navigate to="/login" replace />} /></Routes></>
 }
 
 export default App
