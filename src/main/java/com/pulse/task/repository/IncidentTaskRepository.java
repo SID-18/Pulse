@@ -10,4 +10,6 @@ public interface IncidentTaskRepository
     extends JpaRepository<IncidentTask, UUID> {
 
     List<IncidentTask> findByIncidentIdOrderByCreatedAtAsc(UUID incidentId);
+
+    boolean existsByIncidentIdAndTitle(UUID incidentId, String title);
 }

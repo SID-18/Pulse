@@ -10,6 +10,7 @@ import com.pulse.incident.exception.IncidentNotFoundException;
 import com.pulse.incident.exception.InvalidIncidentOwnerException;
 import com.pulse.incident.repository.IncidentRepository;
 import com.pulse.oncall.repository.OnCallAssignmentRepository;
+import com.pulse.runbook.service.RunbookService;
 import com.pulse.event.entity.IncidentEventType;
 import com.pulse.event.service.IncidentEventService;
 import com.pulse.service.entity.MonitoredService;
@@ -39,6 +40,7 @@ public class IncidentService {
     private final MonitoredServiceRepository monitoredServiceRepository;
     private final UserRepository userRepository;
     private final OnCallAssignmentRepository onCallAssignmentRepository;
+    private final RunbookService runbookService;
     private final IncidentEventService incidentEventService;
     private final IncidentSlaPolicy incidentSlaPolicy;
 
@@ -140,6 +142,7 @@ public class IncidentService {
             "Service assigned: " + service.getName() + "."
         );
         assignActiveOnCallOwner(incident, service);
+        runbookService.applyToIncident(incident, service);
 
         return toResponse(incident);
     }

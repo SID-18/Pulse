@@ -12,6 +12,7 @@ import com.pulse.incident.exception.InvalidIncidentOwnerException;
 import com.pulse.incident.repository.IncidentRepository;
 import com.pulse.oncall.entity.OnCallAssignment;
 import com.pulse.oncall.repository.OnCallAssignmentRepository;
+import com.pulse.runbook.service.RunbookService;
 import com.pulse.service.entity.MonitoredService;
 import com.pulse.service.exception.MonitoredServiceNotFoundException;
 import com.pulse.service.repository.MonitoredServiceRepository;
@@ -51,6 +52,9 @@ class IncidentServiceTest {
 
     @Mock
     private OnCallAssignmentRepository onCallAssignmentRepository;
+
+    @Mock
+    private RunbookService runbookService;
 
     @Mock
     private IncidentEventService incidentEventService;
