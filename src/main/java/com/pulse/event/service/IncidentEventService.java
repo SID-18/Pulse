@@ -43,16 +43,25 @@ public class IncidentEventService {
         IncidentEventType type,
         String message
     ) {
+        recordForRecipient(incident, type, message, incident.getOwner());
+    }
+
+    @Transactional
+    public void recordForRecipient(
+        Incident incident,
+        IncidentEventType type,
+        String message,
+        User recipient
+    ) {
         IncidentEvent event = incidentEventRepository.save(
             new IncidentEvent(incident, type, message)
         );
-        User owner = incident.getOwner();
 
         outboxEventRepository.save(new OutboxEvent(
             event.getId(),
             incident.getId(),
-            owner == null ? null : owner.getId(),
-            owner == null ? null : owner.getTeam().getId(),
+            recipient == null ? null : recipient.getId(),
+            recipient == null ? null : recipient.getTeam().getId(),
             incidentEventsTopic,
             event.getType(),
             event.getMessage(),
