@@ -12,69 +12,6 @@ and try the API. Use `/api/auth/login` to obtain a JWT, then click **Authorize**
 and paste the token to try protected endpoints. The machine-readable OpenAPI
 description is available at `http://localhost:8080/v3/api-docs`.
 
-## Observability
-
-Pulse exposes lightweight operational endpoints through Spring Boot Actuator:
-
-- `GET /actuator/health` — public liveness/readiness health summary, suitable
-  for Docker or a load balancer.
-- `GET /actuator/info` — public non-sensitive application metadata.
-- `GET /actuator/prometheus` — Prometheus-format metrics. This requires an
-  administrator or manager JWT because metrics can reveal operational details.
-
-The health endpoint checks the application's dependencies, including the
-database, Redis, and Kafka. Detailed health information is returned only to an
-authenticated administrator or manager.
-
-## Metrics dashboard
-
-Docker Compose can also start a local Prometheus and Grafana stack. Prometheus
-scrapes the backend every 15 seconds using a dedicated `pulse-metrics` account;
-Grafana is provisioned with the **Pulse Overview** dashboard.
-
-Before the first dashboard startup, create the local Prometheus password file.
-Its value must match `PULSE_METRICS_PASSWORD` in `.env`:
-
-```powershell
-Copy-Item -LiteralPath ".\\observability\\prometheus\\metrics-password.example" -Destination ".\\observability\\prometheus\\metrics-password"
-```
-
-The example uses a development-only password. Change it in both `.env` and the
-untracked `metrics-password` file before sharing an environment. Then run:
-
-```powershell
-docker compose up --build
-```
-
-Open Prometheus at `http://localhost:9090/targets` and confirm both Pulse
-services are **UP**. Open Grafana at `http://localhost:3000`, sign in with the
-`GRAFANA_ADMIN_USER` and `GRAFANA_ADMIN_PASSWORD` values from `.env`, then open
-**Dashboards → Pulse → Pulse Overview**.
-
-## Alerting
-
-Prometheus evaluates Pulse alert rules every 15 seconds and sends active alerts
-to Alertmanager. The initial local rules detect an unavailable backend or
-notification service, sustained HTTP 5xx responses, and database connection
-pool pressure. Alertmanager is intentionally configured as a local dashboard
-only; it does not claim to send email, Slack, or PagerDuty notifications.
-
-Open `http://localhost:9090/alerts` to see alert-rule state and
-`http://localhost:9093` to see alerts routed to Alertmanager. A production
-deployment would add a real receiver and store its credentials outside Git.
-
-## Distributed tracing
-
-Pulse uses Spring Boot's OpenTelemetry support to create traces for HTTP,
-database, and observed Kafka work. Docker Compose sends those traces to an
-OpenTelemetry Collector, which batches and stores them in Tempo. Grafana has a
-provisioned **Pulse Tempo** data source; use **Explore**, select that data
-source, and search for `service.name = "pulse"` or
-`service.name = "pulse-notification-service"`.
-
-Sampling is set to 100% for this local learning environment. Production systems
-normally choose a lower rate or tail-based sampling to control storage costs.
-
 ## Run the complete platform with Docker
 
 Docker Compose is an alternative to the Windows-local PostgreSQL, Memurai, Kafka,
