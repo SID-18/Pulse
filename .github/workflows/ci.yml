@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -29,7 +29,16 @@ jobs:
             notification-service/pom.xml
 
       - name: Test Pulse backend
-        run: chmod +x mvnw && ./mvnw --batch-mode test
+        run: chmod +x mvnw && ./mvnw --batch-mode --errors test
+
+      - name: Upload backend test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-surefire-reports
+          path: target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Test notification service
         working-directory: notification-service

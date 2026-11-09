@@ -5,10 +5,12 @@ import com.pulse.comment.repository.IncidentCommentRepository;
 import com.pulse.event.repository.IncidentEventRepository;
 import com.pulse.event.outbox.OutboxEventRepository;
 import com.pulse.incident.repository.IncidentRepository;
+import com.pulse.oncall.repository.OnCallAssignmentRepository;
 import com.pulse.service.repository.MonitoredServiceRepository;
 import com.pulse.team.entity.Team;
 import com.pulse.task.repository.IncidentTaskRepository;
 import com.pulse.team.repository.TeamRepository;
+import com.pulse.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,12 @@ class TeamControllerIntegrationTest {
     private MonitoredServiceRepository monitoredServiceRepository;
 
     @Autowired
+    private OnCallAssignmentRepository onCallAssignmentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private TeamRepository teamRepository;
 
     @BeforeEach
@@ -66,6 +74,8 @@ class TeamControllerIntegrationTest {
         alertRepository.deleteAll();
         incidentRepository.deleteAll();
         monitoredServiceRepository.deleteAll();
+        onCallAssignmentRepository.deleteAll();
+        userRepository.deleteAll();
         teamRepository.deleteAll();
     }
 
